@@ -1,6 +1,13 @@
 #!/usr/bin/env python2
 
 surf_dict = {}
+mat_dict = {}
+
+class Element(object):
+    def __init__(self, name, xs, value):
+        self.name = name
+        self.xs = xs
+        self.value = value
 
 class Nuclide(object):
     def __init__(self, name, xs, value):
@@ -9,17 +16,32 @@ class Nuclide(object):
         self.value = value
 
 class Sab(object):
-    def __init__(self, name, value):
+    def __init__(self, name, xs):
         self.name = name
         self.xs = xs
 
 class Material(object):
     n_materials = 0
-    def __init__(self, nuclides, sab = None):
+    def __init__(self, key, comment = None):
         self.n_materials += 1
-        self.material_id = n_materials
-        self.nuclides = nuclides
-        self.sab = sab
+        self.material_id = self.n_materials
+        self.elements = []
+        self.nuclides = []
+        self.sab = None
+        self.key = key
+        self.comment = comment
+
+    def add_element(self, name, xs, value):
+        self.elements.append(Element(name, xs, value))
+
+    def add_nuclide(self, name, xs, value):
+        self.nuclides.append(Nuclide(name, xs, value))
+
+    def add_sab(self, name, xs):
+        self.sab = Sab(name, xs)
+
+    def finalize(self):
+        mat_dict.update({self.key:self})
 
 class Surface(object):
     n_surfaces = 0
