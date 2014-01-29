@@ -116,6 +116,14 @@ add_surface('fuelOR', 'z-cylinder', '0.0 0.0 0.392180', 'Fuel Outer Radius')
 add_surface('cladIR', 'z-cylinder', '0.0 0.0 0.400050', 'Clad Inner Radius')
 add_surface('cladOR', 'z-cylinder', '0.0 0.0 0.457200', 'Clad Outer Radius')
 
+# Create fuel pin cells
+add_cell('fuel', 
+    surfaces = '-{0}'.format(surf_dict['fuelOR'].id), 
+    universe = '10',
+    material = mat_dict['fuel24'].id)
+print cell_dict['fuel'].surfaces
+print cell_dict['fuel'].material
+
 # Create Guide Tube surfaces
 add_surface('gtIRad', 'z-cylinder', '0.0 0.0 0.561340', 'Guide Tube Inner Radius above Dashpot')
 add_surface('gtORad', 'z-cylinder', '0.0 0.0 0.601980', 'Guide Tube Outer Radius above Dashpot')
