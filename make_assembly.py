@@ -33,9 +33,9 @@ def main():
     create_gtpin()
 
     # Create pin cells
-    create_fuelpin_cell('fp1', 'fuel', 'h2o')
+    create_fuelpin_cell('fp1', 'fuel', 'h2o', grid="I")
     create_bppin_cell('bp1', 'bp', 'h2o', grid="I")
-    create_gtpin_cell('gt1', 'gt', 'h2o')
+    create_gtpin_cell('gt1', 'gt', 'h2o', grid="I")
 
     # Make lattice
     create_lattice('lat1', 'fp1', 'bp1', 'gt1')
@@ -381,7 +381,7 @@ def create_gtpinDP():
         material = mat_dict['zr'].id,
         comment = 'GT clad at DP')
 
-def create_fuelpin_cell(cell_key, pin_key, water_key):
+def create_fuelpin_cell(cell_key, pin_key, water_key, grid = None):
 
     # Fill static fuel pin
     add_cell('fuelpin_'+cell_key,
@@ -390,12 +390,60 @@ def create_fuelpin_cell(cell_key, pin_key, water_key):
         fill = univ_dict[pin_key].id,
         comment = 'Fuel pin fill for coolant')
 
-    # Fill in water coolant
-    add_cell('cool_'+cell_key,
-        surfaces = '{0}'.format(surf_dict['cladOR'].id),
-        universe = cell_key,
-        material = mat_dict[water_key].id,
-        comment = 'Coolant around fuel pin')
+    if grid != None:
+
+        # Allow this to work with TB and I grids
+        gridleft = 'grid'+grid+'left'
+        gridright = 'grid'+grid+'right'
+        gridback = 'grid'+grid+'back'
+        gridfront = 'grid'+grid+'front'
+
+        # Determine grid spacer material
+        if grid == 'TB':
+            gridmat = 'in'
+        elif grid == 'I':
+            gridmat = 'zr'
+        else:
+            raise Exception('Grid type not recognized - ' + grid)
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['cladOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+                                                      surf_dict[gridback].id, surf_dict[gridfront].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around fuel pin before grid ' + grid)
+
+        # Fill in grid (requires 4 cells because OpenMC doesn't have union operator)
+        add_cell('gridtbn_'+cell_key,
+            surfaces = '{0} {1} -{2}'.format(surf_dict[gridfront].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer N')
+        add_cell('gridtbs_'+cell_key,
+            surfaces = '-{0} {1} -{2}'.format(surf_dict[gridback].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer S')
+        add_cell('gridtbe_'+cell_key,
+            surfaces = '{0}'.format(surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer NE/E/SE')
+        add_cell('gridtbw_'+cell_key,
+            surfaces = '-{0}'.format(surf_dict[gridleft].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer SW/W/NW')
+
+    else:
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0}'.format(surf_dict['cladOR'].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around fuel pin')
 
 def create_bppin_cell(cell_key, pin_key, water_key, grid = None):
 
@@ -414,6 +462,14 @@ def create_bppin_cell(cell_key, pin_key, water_key, grid = None):
         gridback = 'grid'+grid+'back'
         gridfront = 'grid'+grid+'front'
 
+        # Determine grid spacer material
+        if grid == 'TB':
+            gridmat = 'in'
+        elif grid == 'I':
+            gridmat = 'zr'
+        else:
+            raise Exception('Grid type not recognized - ' + grid)
+
         # Fill in water coolant
         add_cell('cool_'+cell_key,
             surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
@@ -426,22 +482,22 @@ def create_bppin_cell(cell_key, pin_key, water_key, grid = None):
         add_cell('gridtbn_'+cell_key,
             surfaces = '{0} {1} -{2}'.format(surf_dict[gridfront].id, surf_dict[gridleft].id, surf_dict[gridright].id),
             universe = cell_key,
-            material = mat_dict['in'].id,
+            material = mat_dict[gridmat].id,
             comment = grid + ' Grid Spacer N')
         add_cell('gridtbs_'+cell_key,
             surfaces = '-{0} {1} -{2}'.format(surf_dict[gridback].id, surf_dict[gridleft].id, surf_dict[gridright].id),
             universe = cell_key,
-            material = mat_dict['in'].id,
+            material = mat_dict[gridmat].id,
             comment = grid + ' Grid Spacer S')
         add_cell('gridtbe_'+cell_key,
             surfaces = '{0}'.format(surf_dict[gridright].id),
             universe = cell_key,
-            material = mat_dict['in'].id,
+            material = mat_dict[gridmat].id,
             comment = grid + ' Grid Spacer NE/E/SE')
         add_cell('gridtbw_'+cell_key,
             surfaces = '-{0}'.format(surf_dict[gridleft].id),
             universe = cell_key,
-            material = mat_dict['in'].id,
+            material = mat_dict[gridmat].id,
             comment = grid + ' Grid Spacer SW/W/NW')
 
     else:
@@ -453,7 +509,7 @@ def create_bppin_cell(cell_key, pin_key, water_key, grid = None):
             material = mat_dict[water_key].id,
             comment = 'Coolant around BP pin')
 
-def create_bppinDP_cell(cell_key, pin_key, water_key):
+def create_bppinDP_cell(cell_key, pin_key, water_key, grid = None):
 
     # Fill static bp pin at DP
     add_cell('bppinDP_'+cell_key,
@@ -462,14 +518,62 @@ def create_bppinDP_cell(cell_key, pin_key, water_key):
         fill = univ_dict[pin_key].id,
         comment = 'BP pin fill for coolant at DP')
 
-    # Fill in water coolant
-    add_cell('cool_'+cell_key,
-        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
-        universe = cell_key,
-        material = mat_dict[water_key].id,
-        comment = 'Coolant around BP pin at DP')
+    if grid != None:
 
-def create_gtpin_cell(cell_key, pin_key, water_key):
+        # Allow this to work with TB and I grids
+        gridleft = 'grid'+grid+'left'
+        gridright = 'grid'+grid+'right'
+        gridback = 'grid'+grid+'back'
+        gridfront = 'grid'+grid+'front'
+
+        # Determine grid spacer material
+        if grid == 'TB':
+            gridmat = 'in'
+        elif grid == 'I':
+            gridmat = 'zr'
+        else:
+            raise Exception('Grid type not recognized - ' + grid)
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+                                                      surf_dict[gridback].id, surf_dict[gridfront].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around BP pin at DP before grid ' + grid)
+
+        # Fill in grid (requires 4 cells because OpenMC doesn't have union operator)
+        add_cell('gridtbn_'+cell_key,
+            surfaces = '{0} {1} -{2}'.format(surf_dict[gridfront].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer N')
+        add_cell('gridtbs_'+cell_key,
+            surfaces = '-{0} {1} -{2}'.format(surf_dict[gridback].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer S')
+        add_cell('gridtbe_'+cell_key,
+            surfaces = '{0}'.format(surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer NE/E/SE')
+        add_cell('gridtbw_'+cell_key,
+            surfaces = '-{0}'.format(surf_dict[gridleft].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer SW/W/NW')
+
+    else:
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0}'.format(surf_dict['gtOR'].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around BP pin at DP')
+
+def create_gtpin_cell(cell_key, pin_key, water_key, grid = None):
 
     # Fill static gt pin
     add_cell('gtpin_'+cell_key,
@@ -478,14 +582,62 @@ def create_gtpin_cell(cell_key, pin_key, water_key):
         fill = univ_dict[pin_key].id, 
         comment = 'GT pin fill for coolant')
 
-    # Fill in water coolant
-    add_cell('cool_'+cell_key,
-        surfaces = '{0}'.format(surf_dict['gtOR'].id),
-        universe = cell_key,
-        material = mat_dict[water_key].id,
-        comment = 'Coolant around GT pin')
+    if grid != None:
 
-def create_gtpinDP_cell(cell_key, pin_key, water_key):
+        # Allow this to work with TB and I grids
+        gridleft = 'grid'+grid+'left'
+        gridright = 'grid'+grid+'right'
+        gridback = 'grid'+grid+'back'
+        gridfront = 'grid'+grid+'front'
+
+        # Determine grid spacer material
+        if grid == 'TB':
+            gridmat = 'in'
+        elif grid == 'I':
+            gridmat = 'zr'
+        else:
+            raise Exception('Grid type not recognized - ' + grid)
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+                                                      surf_dict[gridback].id, surf_dict[gridfront].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around GT pin before grid ' + grid)
+
+        # Fill in grid (requires 4 cells because OpenMC doesn't have union operator)
+        add_cell('gridtbn_'+cell_key,
+            surfaces = '{0} {1} -{2}'.format(surf_dict[gridfront].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer N')
+        add_cell('gridtbs_'+cell_key,
+            surfaces = '-{0} {1} -{2}'.format(surf_dict[gridback].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer S')
+        add_cell('gridtbe_'+cell_key,
+            surfaces = '{0}'.format(surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer NE/E/SE')
+        add_cell('gridtbw_'+cell_key,
+            surfaces = '-{0}'.format(surf_dict[gridleft].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer SW/W/NW')
+
+    else:
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0}'.format(surf_dict['gtOR'].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around GT pin')
+
+def create_gtpinDP_cell(cell_key, pin_key, water_key, grid = None):
 
     # Fill static bp pin at DP
     add_cell('gtpinDP_'+cell_key,
@@ -493,6 +645,61 @@ def create_gtpinDP_cell(cell_key, pin_key, water_key):
         universe = cell_key,
         fill = univ_dict[pin_key].id,
         comment = 'GT pin fill for coolant at DP')
+
+    if grid != None:
+
+        # Allow this to work with TB and I grids
+        gridleft = 'grid'+grid+'left'
+        gridright = 'grid'+grid+'right'
+        gridback = 'grid'+grid+'back'
+        gridfront = 'grid'+grid+'front'
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+                                                      surf_dict[gridback].id, surf_dict[gridfront].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around GT pin at DP before grid ' + grid)
+
+        # Determine grid spacer material
+        if grid == 'TB':
+            gridmat = 'in'
+        elif grid == 'I':
+            gridmat = 'zr'
+        else:
+            raise Exception('Grid type not recognized - ' + grid)
+
+        # Fill in grid (requires 4 cells because OpenMC doesn't have union operator)
+        add_cell('gridtbn_'+cell_key,
+            surfaces = '{0} {1} -{2}'.format(surf_dict[gridfront].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer N')
+        add_cell('gridtbs_'+cell_key,
+            surfaces = '-{0} {1} -{2}'.format(surf_dict[gridback].id, surf_dict[gridleft].id, surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer S')
+        add_cell('gridtbe_'+cell_key,
+            surfaces = '{0}'.format(surf_dict[gridright].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer NE/E/SE')
+        add_cell('gridtbw_'+cell_key,
+            surfaces = '-{0}'.format(surf_dict[gridleft].id),
+            universe = cell_key,
+            material = mat_dict[gridmat].id,
+            comment = grid + ' Grid Spacer SW/W/NW')
+
+    else:
+
+        # Fill in water coolant
+        add_cell('cool_'+cell_key,
+            surfaces = '{0}'.format(surf_dict['gtOR'].id),
+            universe = cell_key,
+            material = mat_dict[water_key].id,
+            comment = 'Coolant around GT pin at DP')
 
     # Fill in water coolant
     add_cell('cool_'+cell_key,
@@ -732,9 +939,19 @@ entrZ = 10)
     <width> {x} {y} </width>
     <basis> xy </basis>
     <pixels> 3000 3000 </pixels>
+      <background>255 0 0</background>
+      <col_spec id="1" rgb="0 0 255"/>
+      <col_spec id="2" rgb="255 218 185"/>
+      <col_spec id="3" rgb="255 255 255"/>
+      <col_spec id="4" rgb="101 101 101"/>
+      <col_spec id="5" rgb="0 0 0"/>
+      <col_spec id="6" rgb="201 201 201"/>
+      <col_spec id="7" rgb="255 215 0"/>
+      <col_spec id="8" rgb="0 255 0"/>
+      <col_spec id="9" rgb="72 209 204"/>
   </plot>
 
-</plots>""".format(x = assy_pitch, y = assy_pitch)
+</plots>""".format(x = assy_pitch+5, y = assy_pitch+5)
     with open('plots.xml','w') as fh:
         fh.write(plot_str)
 
