@@ -11,30 +11,20 @@ def main():
     # Create all surfaces
     create_surfaces()
 
+    # Create grid info
+    create_gridstrap()
+
     # Create water materials 
-    create_water_material('h2o1', 0.73986)
-    create_water_material('h2o2', 0.66)
+    create_water_material('h2o', 0.66)
 
-    # Create fuel pins
-    create_fuelpin('fpin1', 'h2o1')
-    create_fuelpin('fpin2', 'h2o2')
-    cell_dict['water_fpin1'].display()
-    cell_dict['water_fpin2'].display()
-    univ_dict['fpin1'].display()
+    # Create pins
+    create_fuelpin('fpin', 'h2o')
+    create_bppin('bppin','h2o')
+    create_gtpin('gtpin','h2o')
 
-    # Create bp pins
-    create_bppin('bppin1','h2o1')
-    create_bppinDP('bppin1DP', 'h2o2')
-    cell_dict['air3_bppin1'].display()
-    cell_dict['air3_bppin1DP'].display()
-    univ_dict['bppin1DP'].display()
-
-    # Create gt pins
-    create_gtpin('gtpin1','h2o1')
-    create_gtpinDP('gtpin1DP', 'h2o2')
-    cell_dict['mod_gtpin1'].display()
-    cell_dict['mod_gtpin1DP'].display()
-    univ_dict['gtpin1DP'].display()
+    # Make lattice
+    create_lattice('lat1', 'fpin', 'bppin', 'gtpin')
+    lat_dict['lat1'].display()
 
 def create_static_materials():
 
@@ -356,6 +346,53 @@ def create_gtpinDP(pin_key, water_key):
         surfaces = '{0}'.format(surf_dict['gtORdp'].id),
         universe = pin_key,
         material = mat_dict[water_key].id)
+
+def create_gridstrap():
+
+    # Moderator universe
+    add_cell('water_mod',
+        surfaces = '',
+        universe = 'mod',
+        material =  mat_dict['h2o_hzp'].id)
+
+def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
+
+    # Get ids
+    fuel_id = univ_dict[fuel_key].id
+    bp_id = univ_dict[bp_key].id
+    gt_id = univ_dict[gt_key].id
+
+    # Check for grid
+    if not grid:
+        wg_id = univ_dict['mod'].id
+
+    # Make lattice
+    add_lattice(lat_key,
+        dimension = '19 19',
+        lower_left = '',
+        upper_right = '',
+        universes =
+"""
+{wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
+{wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
+""".format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id))
 
 def create_water_material(key, water_density):
 

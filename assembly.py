@@ -5,6 +5,7 @@ surf_dict = {}
 cell_dict = {}
 mat_dict = {}
 univ_dict = {}
+lat_dict = {}
 
 # Class Definitions
 class Element(object):
@@ -156,12 +157,12 @@ class Lattice(object):
         self.ny = dimension.split()[1]
 
     def display(self):
-        '\nLattice ID: {0}'.format(self.id)
-        'Type: {0}'.format(self.type)
-        'Dimension: {0}'.format(self.dimension)
-        'Lower Left: {0}'.format(self.lower_left)
-        'Upper Right: {0}'.format(self.upper_right)
-        'Universes: {0}'.format(self.universes)
+        print '\nLattice ID: {0}'.format(self.id)
+        print 'Type: {0}'.format(self.type)
+        print 'Dimension: {0}'.format(self.dimension)
+        print 'Lower Left: {0}'.format(self.lower_left)
+        print 'Upper Right: {0}'.format(self.upper_right)
+        print 'Universes: {0}'.format(self.universes)
 
 # Global Routines
 def add_surface(key, type, coeffs, comment=None):
@@ -185,3 +186,6 @@ def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=Non
 
     # Add the cell
     cell_dict.update({key:Cell(surfaces, universe, fill, material, comment)})
+
+def add_lattice(key, dimension, lower_left, upper_right, universes):
+    lat_dict.update({key:Lattice(dimension, lower_left, upper_right, universes)})
