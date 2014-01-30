@@ -33,12 +33,15 @@ def main():
     create_gtpin()
 
     # Create pin cells
-    create_fuelpin_cell('fp1', 'fuel', 'h2o', grid='TB')
-    create_bppin_cell('bp1', 'bp', 'h2o', grid='TB')
-    create_gtpin_cell('gt1', 'gt', 'h2o', grid='TB')
+#   create_fuelpin_cell('fp1', 'fuel', 'h2o', grid='TB')
+#   create_bppin_cell('bp1', 'bp', 'h2o', grid='TB')
+#   create_gtpin_cell('gt1', 'gt', 'h2o', grid='TB')
+
+    # Create lower regions
+    create_lower_regions()
 
     # Make lattice
-    create_lattice('lat1', 'fp1', 'bp1', 'gt1', grid='TB')
+#   create_lattice('lat1', 'fp1', 'bp1', 'gt1', 'gt1', grid='TB')
 
     # Create core
     create_core()
@@ -872,12 +875,13 @@ def create_gridstrap():
             material = mat_dict['h2o_hzp'].id,
             comment = 'Mod northwest of {0} northest grid strap'.format(gridmat))
 
-def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
+def create_lattice(lat_key, fuel_key, bp_key, gt_key, it_key, grid=False):
 
     # Get ids
     fuel_id = univ_dict[fuel_key].id
     bp_id = univ_dict[bp_key].id
     gt_id = univ_dict[gt_key].id
+    it_id = univ_dict[it_key].id
 
     # Check for grid
     if grid == 'TB':
@@ -930,7 +934,7 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
                       'pj': bp_id,
                       'pk': gt_id,
                       'pl': gt_id,
-                      'pm': gt_id,
+                      'pm': it_id,
                       'pn': gt_id,
                       'po': gt_id,
                       'pp': bp_id,
@@ -952,6 +956,25 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
                       'we': we_id,
                       'nw': nw_id},
         comment = 'Base lattice')
+
+def create_lower_regions():
+
+    # Support Plate
+    add_cell('suppin', 
+        surfaces = '-{0}'.format(surf_dict['cladOR'].id), 
+        universe = 'supplate',
+        material = mat_dict['ss'].id,
+        comment = 'Support plate pin')
+    add_cell('supmod',
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = 'supplate',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'Moderator around support plate')
+    create_gtpin_cell('gt_hzp', 'gt', 'h2o_hzp')
+
+    # Make lattice for support plate
+    create_lattice('lat1', 'supplate', 'mod', 'mod', 'gt_hzp')
+
 
 def create_core():
     add_cell('core',
