@@ -230,7 +230,7 @@ class Lattice(object):
         xml_str = "\n"
         if self.comment != None:
             xml_str += """  <!--{0:^40}-->\n""".format(self.comment)
-        xml_str += """  <lattice id="{id:>6}" type="{type}", dimension={dim}>\n""".format(id = self.id, type = self.type, dim = self.dimension)
+        xml_str += """  <lattice id="{id:>6}" type="{type}" dimension="{dim}">\n""".format(id = self.id, type = self.type, dim = self.dimension)
         xml_str += """    <lower_left>{lleft}</lower_left>\n""".format(lleft = self.lower_left)
         xml_str += """    <width>{width}</width>\n""".format(width = self.width)
         xml_str += """    <universes>{univs}    </universes>\n""".format(univs = self.universes)

@@ -4,6 +4,11 @@ from assembly import *
 import numpy as np
 from collections import OrderedDict
 
+# Input Data
+batches = 500
+inactive = 100
+particles = 1000
+
 # Global data
 pin_pitch = 1.25984
 assy_pitch = 21.50364
@@ -56,7 +61,7 @@ def create_static_materials():
 
     # Air Material
     mat_air = Material('air', 'Air for Instrumentation Tubes')
-    mat_air.add_element('C', '71c', '6.8296e-09')
+    mat_air.add_nuclide('C-Nat', '71c', '6.8296e-09')
     mat_air.add_nuclide('O-16', '71c', '5.2864e-06')
     mat_air.add_nuclide('O-17', '71c', '1.2877e-08')
     mat_air.add_nuclide('N-14', '71c', '1.9681e-05')
@@ -185,6 +190,8 @@ def create_surfaces():
     add_surface('core_right', 'x-plane', '{0}'.format(box), 'reflective', 'Core right surface')
     add_surface('core_back', 'y-plane', '{0}'.format(-box), 'reflective', 'Core back surface')
     add_surface('core_front', 'y-plane', '{0}'.format(box), 'reflective', 'Core front surface')
+    add_surface('core_bottom', 'z-plane', '0.0', 'reflective', 'Core back surface')
+    add_surface('core_top', 'z-plane', '100.0', 'reflective', 'Core front surface')
 
 def create_fuelpin(pin_key, water_key):
 
@@ -416,8 +423,9 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
 
 def create_core():
     add_cell('core',
-        surfaces = '{0} -{1} {2} -{3}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
-                                              surf_dict['core_back'].id, surf_dict['core_front'].id),
+        surfaces = '{0} -{1} {2} -{3} {4} -{5}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
+                                                       surf_dict['core_back'].id, surf_dict['core_front'].id,
+                                                       surf_dict['core_bottom'].id, surf_dict['core_top'].id),
         fill = lat_dict['lat1'].id)
 
 def create_water_material(key, water_density):
@@ -533,6 +541,41 @@ def write_openmc_input():
         fh.write(mat_str)
 
 ############ Settings File ##############
+
+    set_str = """<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+
+  <!-- Parameters for criticality calculation -->
+  <eigenvalue batches="{batches}" inactive="{inactive}" particles="{particles}" />
+
+  <!-- Starting source -->
+  <source>
+    <space type="box">
+      <parameters>{xbot} {ybot} {zbot} {xtop} {ytop} {ztop}</parameters>
+    </space>
+  </source>
+  
+  <!-- Shannon Entropy -->
+  <entropy>
+    <dimension> {entrX} {entrY} {entrZ} </dimension>
+    <lower_left> {xbot} {ybot} {zbot} </lower_left>
+    <upper_right> {xtop} {ytop} {ztop} </upper_right>
+  </entropy>
+
+</settings>""".format(
+batches = batches, inactive = inactive, particles = particles,
+xbot = -assy_pitch/2.0,
+ybot = -assy_pitch/2.0,
+zbot = 0.0,
+xtop = assy_pitch/2.0,
+ytop = assy_pitch/2.0,
+ztop = 100.0,
+entrX = 17,
+entrY = 17,
+entrZ = 10)
+    with open('settings.xml','w') as fh:
+        fh.write(set_str)
+
 ############ Plots File ##############
 
 if __name__ == '__main__':
