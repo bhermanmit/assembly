@@ -33,12 +33,12 @@ def main():
     create_gtpin()
 
     # Create pin cells
-    create_fuelpin_cell('fp1', 'fuel', 'h2o', grid="I")
-    create_bppin_cell('bp1', 'bp', 'h2o', grid="I")
-    create_gtpin_cell('gt1', 'gt', 'h2o', grid="I")
+    create_fuelpin_cell('fp1', 'fuel', 'h2o', grid='TB')
+    create_bppin_cell('bp1', 'bp', 'h2o', grid='TB')
+    create_gtpin_cell('gt1', 'gt', 'h2o', grid='TB')
 
     # Make lattice
-    create_lattice('lat1', 'fp1', 'bp1', 'gt1')
+    create_lattice('lat1', 'fp1', 'bp1', 'gt1', grid='TB')
 
     # Create core
     create_core()
@@ -200,6 +200,17 @@ def create_surfaces():
     add_surface('gridIright', 'x-plane', '0.60978', comment = 'Intermediate Right Grid Spacer')
     add_surface('gridIback', 'y-plane', '-0.60978', comment = 'Intermediate Back Grid Spacer')
     add_surface('gridIfront', 'y-plane', '0.60978', comment = 'Intermediate Front Grid Spacer')
+
+    # Grid Strap surfaces (need to convert to a pin cell universe coordinate system)
+    strap_offset = assy_pitch/2.0 - 10.73635
+    strap_left = pin_pitch/2.0 - strap_offset
+    strap_right = -pin_pitch/2.0 + strap_offset
+    strap_back = pin_pitch/2.0 - strap_offset 
+    strap_front = -pin_pitch/2.0 + strap_offset
+    add_surface('strapleft', 'x-plane', '{0}'.format(strap_left), comment = 'Grid Strap Left')
+    add_surface('strapright', 'x-plane', '{0}'.format(strap_right), comment = 'Grid Strap Right')
+    add_surface('strapback', 'y-plane', '{0}'.format(strap_back), comment = 'Grid Strap Back')
+    add_surface('strapfront', 'y-plane', '{0}'.format(strap_front), comment = 'Grid Strap Front')
 
     # Core surfaces
     box = assy_pitch/2.0
@@ -717,6 +728,150 @@ def create_gridstrap():
         material =  mat_dict['h2o_hzp'].id,
         comment = 'Moderator universe')
 
+    # North grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_N_'+gridmat,
+            surfaces = '-{0}'.format(surf_dict['strapfront'].id),
+            universe = 'strap_N_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'North {0} grid strap'.format(gridmat))
+        add_cell('strap_N_mod_'+gridmat,
+            surfaces = '{0}'.format(surf_dict['strapfront'].id),
+            universe = 'strap_N_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod north of {0} north grid strap'.format(gridmat))
+
+    # Northeast grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_NE_'+gridmat,
+            surfaces = '-{0} -{1}'.format(surf_dict['strapright'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NE_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'Northeast {0} grid strap'.format(gridmat))
+        add_cell('strap_NE_mod_n_'+gridmat,
+            surfaces = '-{0} {1}'.format(surf_dict['strapright'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod north of {0} northeast grid strap'.format(gridmat))
+        add_cell('strap_NE_mod_e_'+gridmat,
+            surfaces = '{0} -{1}'.format(surf_dict['strapright'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod east of {0} northeast grid strap'.format(gridmat))
+        add_cell('strap_NE_mod_ne_'+gridmat,
+            surfaces = '{0} {1}'.format(surf_dict['strapright'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod northeast of {0} northeast grid strap'.format(gridmat))
+
+    # East grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_E_'+gridmat,
+            surfaces = '-{0}'.format(surf_dict['strapright'].id),
+            universe = 'strap_E_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'East {0} grid strap'.format(gridmat))
+        add_cell('strap_E_mod_'+gridmat,
+            surfaces = '{0}'.format(surf_dict['strapright'].id),
+            universe = 'strap_E_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod east of {0} east grid strap'.format(gridmat))
+
+    # Southeast grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_SE_'+gridmat,
+            surfaces = '-{0} {1}'.format(surf_dict['strapright'].id, surf_dict['strapback'].id),
+            universe = 'strap_SE_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'Southeast {0} grid strap'.format(gridmat))
+        add_cell('strap_SE_mod_s_'+gridmat,
+            surfaces = '-{0} -{1}'.format(surf_dict['strapright'].id, surf_dict['strapback'].id),
+            universe = 'strap_SE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod south of {0} southeast grid strap'.format(gridmat))
+        add_cell('strap_SE_mod_e_'+gridmat,
+            surfaces = '{0} {1}'.format(surf_dict['strapright'].id, surf_dict['strapback'].id),
+            universe = 'strap_SE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod east of {0} southeast grid strap'.format(gridmat))
+        add_cell('strap_SE_mod_se_'+gridmat,
+            surfaces = '{0} -{1}'.format(surf_dict['strapright'].id, surf_dict['strapback'].id),
+            universe = 'strap_SE_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod southeast of {0} southeast grid strap'.format(gridmat))
+
+    # South grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_S_'+gridmat,
+            surfaces = '{0}'.format(surf_dict['strapback'].id),
+            universe = 'strap_S_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'South {0} grid strap'.format(gridmat))
+        add_cell('strap_S_mod_'+gridmat,
+            surfaces = '-{0}'.format(surf_dict['strapback'].id),
+            universe = 'strap_S_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod south of {0} south grid strap'.format(gridmat))
+
+    # Southwest grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_SW_'+gridmat,
+            surfaces = '{0} {1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_SW_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'Southwest {0} grid strap'.format(gridmat))
+        add_cell('strap_SW_mod_s_'+gridmat,
+            surfaces = '{0} -{1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_SW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod south of {0} southwest grid strap'.format(gridmat))
+        add_cell('strap_SW_mod_w_'+gridmat,
+            surfaces = '-{0} {1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_SW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod west of {0} southwest grid strap'.format(gridmat))
+        add_cell('strap_SW_mod_sw_'+gridmat,
+            surfaces = '-{0} -{1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_SW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod southwest of {0} southwest grid strap'.format(gridmat))
+
+    # West grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_W_'+gridmat,
+            surfaces = '{0}'.format(surf_dict['strapleft'].id),
+            universe = 'strap_W_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'West {0} grid strap'.format(gridmat))
+        add_cell('strap_W_mod_'+gridmat,
+            surfaces = '-{0}'.format(surf_dict['strapleft'].id),
+            universe = 'strap_W_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod west of {0} west grid strap'.format(gridmat))
+
+    # Northwest grid strap
+    for gridmat in ['ss', 'zr']:
+        add_cell('strap_NW_'+gridmat,
+            surfaces = '{0} -{1}'.format(surf_dict['strapleft'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NW_'+gridmat,
+            material = mat_dict[gridmat].id,
+            comment = 'Northwest {0} grid strap'.format(gridmat))
+        add_cell('strap_NW_mod_s_'+gridmat,
+            surfaces = '{0} {1}'.format(surf_dict['strapleft'].id, surf_dict['strapfront'].id),
+            universe = 'strap_NW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod north of {0} northwest grid strap'.format(gridmat))
+        add_cell('strap_NW_mod_w_'+gridmat,
+            surfaces = '-{0} -{1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_NW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod west of {0} northwest grid strap'.format(gridmat))
+        add_cell('strap_NW_mod_sw_'+gridmat,
+            surfaces = '-{0} {1}'.format(surf_dict['strapleft'].id, surf_dict['strapback'].id),
+            universe = 'strap_NW_'+gridmat,
+            material = mat_dict['h2o_hzp'].id,
+            comment = 'Mod northwest of {0} northest grid strap'.format(gridmat))
+
 def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
 
     # Get ids
@@ -725,8 +880,34 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
     gt_id = univ_dict[gt_key].id
 
     # Check for grid
-    if not grid:
-        wg_id = univ_dict['mod'].id
+    if grid == 'TB':
+        no_id = univ_dict['strap_N_ss'].id
+        ne_id = univ_dict['strap_NE_ss'].id
+        ea_id = univ_dict['strap_E_ss'].id
+        se_id = univ_dict['strap_SE_ss'].id
+        so_id = univ_dict['strap_S_ss'].id
+        sw_id = univ_dict['strap_SW_ss'].id
+        we_id = univ_dict['strap_W_ss'].id
+        nw_id = univ_dict['strap_NW_ss'].id
+    elif grid == 'I':
+        no_id = univ_dict['strap_N_zr'].id
+        ne_id = univ_dict['strap_NE_zr'].id
+        ea_id = univ_dict['strap_E_zr'].id
+        se_id = univ_dict['strap_SE_zr'].id
+        so_id = univ_dict['strap_S_zr'].id
+        sw_id = univ_dict['strap_SW_zr'].id
+        we_id = univ_dict['strap_W_zr'].id
+        nw_id = univ_dict['strap_NW_zr'].id
+    else:
+        no_id = univ_dict['mod'].id
+        ne_id = univ_dict['mod'].id
+        ea_id = univ_dict['mod'].id
+        se_id = univ_dict['mod'].id
+        so_id = univ_dict['mod'].id
+        sw_id = univ_dict['mod'].id
+        we_id = univ_dict['mod'].id
+        nw_id = univ_dict['mod'].id
+
 
     # Calculate coordinates
     lleft = -19.0*pin_pitch / 2.0
@@ -762,14 +943,14 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
                       'pw': bp_id,
                       'px': gt_id,
                       'py': bp_id,
-                      'no': wg_id,
-                      'ne': wg_id,
-                      'ea': wg_id,
-                      'se': wg_id,
-                      'so': wg_id,
-                      'sw': wg_id,
-                      'we': wg_id,
-                      'nw': wg_id},
+                      'no': no_id,
+                      'ne': ne_id,
+                      'ea': ea_id,
+                      'se': se_id,
+                      'so': so_id,
+                      'sw': sw_id,
+                      'we': we_id,
+                      'nw': nw_id},
         comment = 'Base lattice')
 
 def create_core():
