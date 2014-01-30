@@ -5,19 +5,24 @@ import numpy as np
 
 def main():
 
-    # Load in all static materials
-    setup_static_materials()
+    # Create all static materials
+    create_static_materials()
 
-    # Print out water material
-    mat_dict['h2o_hzp'].display()
+    # Create all surfaces
+    create_surfaces()
 
-    # Create water from scratch and print it
+    # Create water materials 
     create_water_material('h2o1', 0.73986)
     create_water_material('h2o2', 0.66)
-    mat_dict['h2o1'].display()
-    mat_dict['h2o2'].display() 
 
-def setup_static_materials():
+    # Create fuel pins
+    create_fuelpin('pin1', 'h2o1')
+    create_fuelpin('pin2', 'h2o2')
+    cell_dict['water_pin1'].display()
+    cell_dict['water_pin2'].display()
+    univ_dict['pin1'].display()
+
+def create_static_materials():
 
     # HZP Water Material
     mat_hzph2o = Material('h2o_hzp', 'HZP Water @ 0.73986 g/cc')
@@ -139,7 +144,7 @@ def setup_static_materials():
     mat_bsg.add_nuclide('Si-30', '71c', '5.6743e-04')
     mat_bsg.finalize()
 
-def setup_surfaces():
+def create_surfaces():
 
     # Create fuel pin surfaces
     add_surface('fuelOR', 'z-cylinder', '0.0 0.0 0.392180', 'Fuel Outer Radius')
@@ -162,24 +167,31 @@ def setup_surfaces():
     add_surface('bpIR7', 'z-cylinder', '0.0 0.0 0.561340', 'Burnable Absorber Rod Inner Radius 7')
     add_surface('bpIR8', 'z-cylinder', '0.0 0.0 0.601980', 'Burnable Absorber Rod Inner Radius 8')
 
-def generate_fuelpin_universe(key, water_density):
+def create_fuelpin(pin_key, water_key):
 
-    # Compute water density
-    create_water_material(key, water_density)
-
-    # Create fuel pin cells
-    add_cell('fuel', 
+    # Fuel Pellet
+    add_cell('fuel_'+pin_key, 
         surfaces = '-{0}'.format(surf_dict['fuelOR'].id), 
-        universe = 'fuel pin',
+        universe = pin_key,
         material = mat_dict['fuel24'].id)
-    add_cell('gap',
+
+    # Gas Gap
+    add_cell('gap_'+pin_key,
         surfaces = '{0} -{1}'.format(surf_dict['fuelOR'].id, surf_dict['cladIR'].id),
-        universe = 'fuel pin',
+        universe = pin_key,
         material = mat_dict['he'].id)
-    add_cell('clad',
+
+    # Clad
+    add_cell('clad_'+pin_key,
         surfaces = '{0} -{1}'.format(surf_dict['cladIR'].id, surf_dict['cladOR'].id),
-         universe = 'fuel pin',
-         material = mat_dict['zr'].id)
+        universe = pin_key,
+        material = mat_dict['zr'].id)
+
+    # Surrounding Water
+    add_cell('water_'+pin_key,
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = pin_key,
+        material = mat_dict[water_key].id)
 
 def create_water_material(key, water_density):
 

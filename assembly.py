@@ -5,7 +5,6 @@ surf_dict = {}
 cell_dict = {}
 mat_dict = {}
 univ_dict = {}
-universe_id = 9
 
 # Class Definitions
 class Element(object):
@@ -42,8 +41,8 @@ class Sab(object):
 class Material(object):
     n_materials = 0
     def __init__(self, key, comment = None):
-        self.n_materials += 1
-        self.id = self.n_materials
+        Material.n_materials += 1
+        self.id = Material.n_materials
         self.elements = []
         self.nuclides = []
         self.sab = None
@@ -76,8 +75,8 @@ class Material(object):
 class Surface(object):
     n_surfaces = 0
     def __init__(self, type, coeffs = "", comment=None):
-        self.n_surfaces += 1
-        self.id = self.n_surfaces
+        Surface.n_surfaces += 1
+        self.id = Surface.n_surfaces
         self.type = type
         self.coeffs = coeffs
         self.comment = comment
@@ -86,29 +85,37 @@ class Surface(object):
         print '\nSurface ID: {0}'.format(self.id)
         print 'TYPE: {0}'.format(self.type)
         print 'COEFFICIENTS: {0}'.format(self.coeffs)
-        if comment != None:
+        if self.comment != None:
             print 'COMMENT: {0}'.format(self.comment)
+
+class Universe(object):
+    n_universes = 0
+    def __init__(self, value=None):
+        if value != None:
+            self.id = value 
+        else:
+            Universe.n_universes += 1
+            self.id = 9 + Universe.n_universes
+        self.cells = []
+
+    def add_cell(self, key):
+        self.cells.append(key)
+
+    def display(self):
+        print '\nUniverse ID: {0}'.format(self.id)
+        print 'Cells: {0}'.format(self.cells)
 
 class Cell(object):
     n_cells = 0
     def __init__(self, surfaces, universe=None, fill=None, material=None, comment=None):
-        self.n_cells += 1
-        self.id = self.n_cells
+        Cell.n_cells += 1
+        self.id = Cell.n_cells
         self.fill = fill
         self.material = material
         self.surfaces = surfaces
+        self.universe = universe
         self.comment = comment
         self.checked = False
-
-        # universe options
-        if universe == None:
-            self.universe = 0
-        elif univ_dict.has_key(universe):
-            self.universe = univ_dict[universe]
-        else:
-            universe_id += 1
-            univ_dict.update({universe:universe_id})
-            self.universe = univ_dict[universe]
 
         # check cell setup
         self.checked = self.check_cell()
@@ -124,19 +131,20 @@ class Cell(object):
 
     def display(self):
         print '\nCell ID {0}'.format(self.id)
-        if fill != None:
+        if self.fill != None:
             print 'Fill: {0}'.format(self.fill)
-        if material != None:
+        if self.material != None:
             print 'Material: {0}'.format(self.material)
         print 'Surfaces: {0}'.format(self.surfaces)
-        if comment != None:
+        print 'Universe: {0}'.format(self.universe)
+        if self.comment != None:
             print 'Comment: {0}'.format(self.comment)
 
 class Lattice(object):
     n_lattices = 0
     def __init__(self, dimension, lower_left, upper_right, universes):
-        self.n_lattices += 1
-        self.id = self.n_lattices
+        Lattice.n_lattices += 1
+        self.id = Lattice.n_lattices
         self.type = "rectangular"
         self.dimension = dimension
         self.lower_left = lower_left
@@ -160,4 +168,20 @@ def add_surface(key, type, coeffs, comment=None):
      surf_dict.update({key:Surface(type, coeffs, comment)})
 
 def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=None):
+
+    # Get universe ID
+    if universe == None:
+        if not univ_dict.has_key('global'):
+            univ_dict.update({'global':Universe(0)})
+        univ_dict['global'].add_cell(key)
+        universe = univ_dict['global'].id
+    elif univ_dict.has_key(universe):
+        univ_dict[universe].add_cell(key)
+        universe = univ_dict[universe].id
+    else:
+        univ_dict.update({universe:Universe()})
+        univ_dict[universe].add_cell(key)
+        universe = univ_dict[universe].id
+
+    # Add the cell
     cell_dict.update({key:Cell(surfaces, universe, fill, material, comment)})
