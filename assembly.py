@@ -22,6 +22,11 @@ class Element(object):
         print '    XS: {0}'.format(self.xs)
         print '    Value: {0}'.format(self.value)
 
+    def write_xml(self):
+        xml_str = ""
+        xml_str += """    <element name="{name}" xs="{xs}" ao="{value}" />\n""".format(name = self.name, xs = self.xs, value = self.value)
+        return xml_str
+
 class Nuclide(object):
     def __init__(self, name, xs, value):
         self.name = name
@@ -33,6 +38,11 @@ class Nuclide(object):
         print '    XS: {0}'.format(self.xs)
         print '    Value: {0}'.format(self.value)
 
+    def write_xml(self):
+        xml_str = ""
+        xml_str += """    <nuclide name="{name}" xs="{xs}" ao="{value}" />\n""".format(name = self.name, xs = self.xs, value = self.value)
+        return xml_str
+
 class Sab(object):
     def __init__(self, name, xs):
         self.name = name
@@ -41,6 +51,11 @@ class Sab(object):
     def display(self):
         print '    Name: {0}'.format(self.name)
         print '    XS: {0}'.format(self.xs)
+
+    def write_xml(self):
+        xml_str = ""
+        xml_str += """    <sab name="{name}" xs="{xs}" />\n""".format(name = self.name, xs = self.xs)
+        return xml_str
 
 class Material(object):
     n_materials = 0
@@ -75,6 +90,21 @@ class Material(object):
             item.display()
         print 'S(a,b):'
         self.sab.display()
+
+    def write_xml(self):
+        xml_str = ""
+        if self.comment != None:
+            xml_str += """  <!--{0:^40}-->\n""".format(self.comment)
+        xml_str += """  <material id="{id:>6}">\n""".format(id = self.id)
+        xml_str += """    <density units="sum" />\n"""
+        for item in self.elements:
+            xml_str += item.write_xml()
+        for item in self.nuclides:
+            xml_str += item.write_xml()
+        if self.sab != None:
+            xml_str += self.sab.write_xml()
+        xml_str += """  </material>\n"""
+        return xml_str
 
 class Surface(object):
     n_surfaces = 0

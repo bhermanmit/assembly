@@ -515,6 +515,23 @@ def write_openmc_input():
         fh.write(geo_str)
 
 ############ Materials File ##############
+
+    # Heading info
+    mat_str = ""
+    mat_str += \
+"""<?xml version="1.0" encoding="UTF-8"?>\n<materials>\n\n"""
+
+    # Write out materials
+    for item in mat_dict.keys():
+        mat_str += mat_dict[item].write_xml()
+        mat_str += "\n"
+
+    # Write out footer info
+    mat_str += \
+"""</materials>"""
+    with open('materials.xml','w') as fh:
+        fh.write(mat_str)
+
 ############ Settings File ##############
 ############ Plots File ##############
 
