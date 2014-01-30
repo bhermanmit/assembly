@@ -16,11 +16,25 @@ def main():
     create_water_material('h2o2', 0.66)
 
     # Create fuel pins
-    create_fuelpin('pin1', 'h2o1')
-    create_fuelpin('pin2', 'h2o2')
-    cell_dict['water_pin1'].display()
-    cell_dict['water_pin2'].display()
-    univ_dict['pin1'].display()
+    create_fuelpin('fpin1', 'h2o1')
+    create_fuelpin('fpin2', 'h2o2')
+    cell_dict['water_fpin1'].display()
+    cell_dict['water_fpin2'].display()
+    univ_dict['fpin1'].display()
+
+    # Create bp pins
+    create_bppin('bppin1','h2o1')
+    create_bppinDP('bppin1DP', 'h2o2')
+    cell_dict['air3_bppin1'].display()
+    cell_dict['air3_bppin1DP'].display()
+    univ_dict['bppin1DP'].display()
+
+    # Create gt pins
+    create_gtpin('gtpin1','h2o1')
+    create_gtpinDP('gtpin1DP', 'h2o2')
+    cell_dict['mod_gtpin1'].display()
+    cell_dict['mod_gtpin1DP'].display()
+    univ_dict['gtpin1DP'].display()
 
 def create_static_materials():
 
@@ -152,10 +166,10 @@ def create_surfaces():
     add_surface('cladOR', 'z-cylinder', '0.0 0.0 0.457200', 'Clad Outer Radius')
 
     # Create Guide Tube surfaces
-    add_surface('gtIRad', 'z-cylinder', '0.0 0.0 0.561340', 'Guide Tube Inner Radius above Dashpot')
-    add_surface('gtORad', 'z-cylinder', '0.0 0.0 0.601980', 'Guide Tube Outer Radius above Dashpot')
-    add_surface('gtIRbd', 'z-cylinder', '0.0 0.0 0.504190', 'Guide Tube Inner Radius at Dashpot')
-    add_surface('gtORbd', 'z-cylinder', '0.0 0.0 0.546100', 'Guide Tube Outer Radius at Dashpot')
+    add_surface('gtIR', 'z-cylinder', '0.0 0.0 0.561340', 'Guide Tube Inner Radius above Dashpot')
+    add_surface('gtOR', 'z-cylinder', '0.0 0.0 0.601980', 'Guide Tube Outer Radius above Dashpot')
+    add_surface('gtIRdp', 'z-cylinder', '0.0 0.0 0.504190', 'Guide Tube Inner Radius at Dashpot')
+    add_surface('gtORdp', 'z-cylinder', '0.0 0.0 0.546100', 'Guide Tube Outer Radius at Dashpot')
 
     # Burnable Poison surfaces
     add_surface('bpIR1', 'z-cylinder', '0.0 0.0 0.214000', 'Burnable Absorber Rod Inner Radius 1')
@@ -164,8 +178,6 @@ def create_surfaces():
     add_surface('bpIR4', 'z-cylinder', '0.0 0.0 0.426720', 'Burnable Absorber Rod Inner Radius 4')
     add_surface('bpIR5', 'z-cylinder', '0.0 0.0 0.436880', 'Burnable Absorber Rod Inner Radius 5')
     add_surface('bpIR6', 'z-cylinder', '0.0 0.0 0.483870', 'Burnable Absorber Rod Inner Radius 6')
-    add_surface('bpIR7', 'z-cylinder', '0.0 0.0 0.561340', 'Burnable Absorber Rod Inner Radius 7')
-    add_surface('bpIR8', 'z-cylinder', '0.0 0.0 0.601980', 'Burnable Absorber Rod Inner Radius 8')
 
 def create_fuelpin(pin_key, water_key):
 
@@ -190,6 +202,158 @@ def create_fuelpin(pin_key, water_key):
     # Surrounding Water
     add_cell('water_'+pin_key,
         surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = pin_key,
+        material = mat_dict[water_key].id)
+
+def create_bppin(pin_key, water_key):
+
+    # Inner Air Region
+    add_cell('air1_'+pin_key,
+        surfaces = '-{0}'.format(surf_dict['bpIR1'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Inner Stainless Steel Region
+    add_cell('ss1_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR1'].id, surf_dict['bpIR2'].id),
+        universe = pin_key,
+        material = mat_dict['ss'].id)
+
+    # Middle Air Region
+    add_cell('air2_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR2'].id, surf_dict['bpIR3'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Borosilicate Glass Region
+    add_cell('bsg_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR3'].id, surf_dict['bpIR4'].id),
+        universe = pin_key,
+        material = mat_dict['bsg'].id)
+
+    # Outer Air Region
+    add_cell('air3_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR4'].id, surf_dict['bpIR5'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Outer Stainless Steel Region
+    add_cell('ss2_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR5'].id, surf_dict['bpIR6'].id),
+        universe = pin_key,
+        material = mat_dict['ss'].id)
+
+    # Moderator Region
+    add_cell('mod_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIR'].id),
+        universe = pin_key,
+        material = mat_dict['h2o_hzp'].id)
+
+    # Tube Clad
+    add_cell('clad_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtOR'].id),
+        universe = pin_key,
+        material = mat_dict['zr'].id)
+
+    # Surrounding Water
+    add_cell('water_'+pin_key,
+        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
+        universe = pin_key,
+        material = mat_dict[water_key].id)
+
+def create_bppinDP(pin_key, water_key):
+
+    # Inner Air Region
+    add_cell('air1_'+pin_key,
+        surfaces = '-{0}'.format(surf_dict['bpIR1'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Inner Stainless Steel Region
+    add_cell('ss1_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR1'].id, surf_dict['bpIR2'].id),
+        universe = pin_key,
+        material = mat_dict['ss'].id)
+
+    # Middle Air Region
+    add_cell('air2_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR2'].id, surf_dict['bpIR3'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Borosilicate Glass Region
+    add_cell('bsg_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR3'].id, surf_dict['bpIR4'].id),
+        universe = pin_key,
+        material = mat_dict['bsg'].id)
+
+    # Outer Air Region
+    add_cell('air3_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR4'].id, surf_dict['bpIR5'].id),
+        universe = pin_key,
+        material = mat_dict['air'].id)
+
+    # Outer Stainless Steel Region
+    add_cell('ss2_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR5'].id, surf_dict['bpIR6'].id),
+        universe = pin_key,
+        material = mat_dict['ss'].id)
+
+    # Moderator Region
+    add_cell('mod_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIRdp'].id),
+        universe = pin_key,
+        material = mat_dict['h2o_hzp'].id)
+
+    # Tube Clad
+    add_cell('clad_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtORdp'].id),
+        universe = pin_key,
+        material = mat_dict['zr'].id)
+
+    # Surrounding Water
+    add_cell('water_'+pin_key,
+        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
+        universe = pin_key,
+        material = mat_dict[water_key].id)
+
+def create_gtpin(pin_key, water_key):
+
+    # Moderator Region
+    add_cell('mod_'+pin_key,
+        surfaces = '-{0}'.format(surf_dict['gtIR'].id),
+        universe = pin_key,
+        material = mat_dict['h2o_hzp'].id)
+
+    # Tube Clad
+    add_cell('clad_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
+        universe = pin_key,
+        material = mat_dict['zr'].id)
+
+    # Surrounding Water
+    add_cell('water_'+pin_key,
+        surfaces = '{0}'.format(surf_dict['gtOR'].id),
+        universe = pin_key,
+        material = mat_dict[water_key].id)
+
+def create_gtpinDP(pin_key, water_key):
+
+    # Moderator Region
+    add_cell('mod_'+pin_key,
+        surfaces = '-{0}'.format(surf_dict['gtIRdp'].id),
+        universe = pin_key,
+        material = mat_dict['h2o_hzp'].id)
+
+    # Tube Clad
+    add_cell('clad_'+pin_key,
+        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtORdp'].id),
+        universe = pin_key,
+        material = mat_dict['zr'].id)
+
+    # Surrounding Water
+    add_cell('water_'+pin_key,
+        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
         universe = pin_key,
         material = mat_dict[water_key].id)
 
