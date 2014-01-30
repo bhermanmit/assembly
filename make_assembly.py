@@ -27,13 +27,18 @@ def main():
     # Create water materials 
     create_water_material('h2o', 0.66)
 
-    # Create pins
-    create_fuelpin('fpin', 'h2o')
-    create_bppin('bppin','h2o')
-    create_gtpin('gtpin','h2o')
+    # Create static pins
+    create_fuelpin()
+    create_bppin()
+    create_gtpin()
+
+    # Create pin cells
+    create_fuelpin_cell('fp1', 'fuel', 'h2o')
+    create_bppin_cell('bp1', 'bp', 'h2o')
+    create_gtpin_cell('gt1', 'gt', 'h2o')
 
     # Make lattice
-    create_lattice('lat1', 'fpin', 'bppin', 'gtpin')
+    create_lattice('lat1', 'fp1', 'bp1', 'gt1')
 
     # Create core
     create_core()
@@ -193,183 +198,256 @@ def create_surfaces():
     add_surface('core_bottom', 'z-plane', '0.0', 'reflective', 'Core back surface')
     add_surface('core_top', 'z-plane', '100.0', 'reflective', 'Core front surface')
 
-def create_fuelpin(pin_key, water_key):
+def create_fuelpin():
 
     # Fuel Pellet
-    add_cell('fuel_'+pin_key, 
+    add_cell('fuel', 
         surfaces = '-{0}'.format(surf_dict['fuelOR'].id), 
-        universe = pin_key,
-        material = mat_dict['fuel24'].id)
+        universe = 'fuel',
+        material = mat_dict['fuel24'].id,
+        comment = 'Fuel pellet')
 
     # Gas Gap
-    add_cell('gap_'+pin_key,
+    add_cell('gap',
         surfaces = '{0} -{1}'.format(surf_dict['fuelOR'].id, surf_dict['cladIR'].id),
-        universe = pin_key,
-        material = mat_dict['he'].id)
+        universe = 'fuel',
+        material = mat_dict['he'].id,
+        comment = 'Fuel pin gas gap')
 
     # Clad
-    add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['cladIR'].id, surf_dict['cladOR'].id),
-        universe = pin_key,
-        material = mat_dict['zr'].id)
+    add_cell('clad',
+        surfaces = '{0}'.format(surf_dict['cladIR'].id),
+        universe = 'fuel',
+        material = mat_dict['zr'].id,
+        comment = 'Fuel pin clad')
 
-    # Surrounding Water
-    add_cell('water_'+pin_key,
-        surfaces = '{0}'.format(surf_dict['cladOR'].id),
-        universe = pin_key,
-        material = mat_dict[water_key].id)
-
-def create_bppin(pin_key, water_key):
+def create_bppin():
 
     # Inner Air Region
-    add_cell('air1_'+pin_key,
+    add_cell('air1BP',
         surfaces = '-{0}'.format(surf_dict['bpIR1'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bp',
+        material = mat_dict['air'].id,
+        comment = 'BP inner air')
 
     # Inner Stainless Steel Region
-    add_cell('ss1_'+pin_key,
+    add_cell('ss1BP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR1'].id, surf_dict['bpIR2'].id),
-        universe = pin_key,
-        material = mat_dict['ss'].id)
+        universe = 'bp',
+        material = mat_dict['ss'].id,
+        comment = 'BP inner stainless')
 
     # Middle Air Region
-    add_cell('air2_'+pin_key,
+    add_cell('air2BP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR2'].id, surf_dict['bpIR3'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bp',
+        material = mat_dict['air'].id,
+        comment = 'BP middle air')
 
     # Borosilicate Glass Region
-    add_cell('bsg_'+pin_key,
+    add_cell('bsgBP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR3'].id, surf_dict['bpIR4'].id),
-        universe = pin_key,
-        material = mat_dict['bsg'].id)
+        universe = 'bp',
+        material = mat_dict['bsg'].id,
+        comment = 'BP borosilicate')
 
     # Outer Air Region
-    add_cell('air3_'+pin_key,
+    add_cell('air3BP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR4'].id, surf_dict['bpIR5'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bp',
+        material = mat_dict['air'].id,
+        comment = 'BP outer air')
 
     # Outer Stainless Steel Region
-    add_cell('ss2_'+pin_key,
+    add_cell('ss2BP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR5'].id, surf_dict['bpIR6'].id),
-        universe = pin_key,
-        material = mat_dict['ss'].id)
+        universe = 'bp',
+        material = mat_dict['ss'].id,
+        comment = 'BP outer stainless')
 
     # Moderator Region
-    add_cell('mod_'+pin_key,
+    add_cell('modBP',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIR'].id),
-        universe = pin_key,
-        material = mat_dict['h2o_hzp'].id)
+        universe = 'bp',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'BP moderator')
 
     # Tube Clad
-    add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
-        universe = pin_key,
-        material = mat_dict['zr'].id)
+    add_cell('cladBP',
+        surfaces = '{0}'.format(surf_dict['gtIR'].id),
+        universe = 'bp',
+        material = mat_dict['zr'].id,
+        comment = 'BP clad')
 
-    # Surrounding Water
-    add_cell('water_'+pin_key,
-        surfaces = '{0}'.format(surf_dict['gtOR'].id),
-        universe = pin_key,
-        material = mat_dict[water_key].id)
-
-def create_bppinDP(pin_key, water_key):
+def create_bppinDP():
 
     # Inner Air Region
-    add_cell('air1_'+pin_key,
+    add_cell('air1BPdp',
         surfaces = '-{0}'.format(surf_dict['bpIR1'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bpDP',
+        material = mat_dict['air'].id,
+        comment = 'BP inner air at DP')
 
     # Inner Stainless Steel Region
-    add_cell('ss1_'+pin_key,
+    add_cell('ss1BPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR1'].id, surf_dict['bpIR2'].id),
-        universe = pin_key,
-        material = mat_dict['ss'].id)
+        universe = 'bpDP',
+        material = mat_dict['ss'].id,
+        comment = 'BP inner stainless at DP')
 
     # Middle Air Region
-    add_cell('air2_'+pin_key,
+    add_cell('air2BPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR2'].id, surf_dict['bpIR3'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bpDP',
+        material = mat_dict['air'].id,
+        comment = 'BP middle air at DP')
 
     # Borosilicate Glass Region
-    add_cell('bsg_'+pin_key,
+    add_cell('bsgBPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR3'].id, surf_dict['bpIR4'].id),
-        universe = pin_key,
-        material = mat_dict['bsg'].id)
+        universe = 'bpDP',
+        material = mat_dict['bsg'].id,
+        comment = 'BP borosilicate at DP')
 
     # Outer Air Region
-    add_cell('air3_'+pin_key,
+    add_cell('air3BPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR4'].id, surf_dict['bpIR5'].id),
-        universe = pin_key,
-        material = mat_dict['air'].id)
+        universe = 'bpDP',
+		material = mat_dict['air'].id,
+		comment = 'BP outer air at DP')
 
     # Outer Stainless Steel Region
-    add_cell('ss2_'+pin_key,
+    add_cell('ss2BPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR5'].id, surf_dict['bpIR6'].id),
-        universe = pin_key,
-        material = mat_dict['ss'].id)
+        universe = 'bpDP',
+        material = mat_dict['ss'].id,
+        comment = 'BP outer stainless at DP')
 
     # Moderator Region
-    add_cell('mod_'+pin_key,
+    add_cell('modBPdp',
         surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIRdp'].id),
-        universe = pin_key,
-        material = mat_dict['h2o_hzp'].id)
+        universe = 'bpDP',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'BP moderator at DP')
 
     # Tube Clad
-    add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtORdp'].id),
-        universe = pin_key,
-        material = mat_dict['zr'].id)
+    add_cell('cladBPdp',
+        surfaces = '{0}'.format(surf_dict['gtIRdp'].id),
+        universe = 'bpDP',
+        material = mat_dict['zr'].id,
+        comment = 'BP clad at DP')
 
-    # Surrounding Water
-    add_cell('water_'+pin_key,
-        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
-        universe = pin_key,
-        material = mat_dict[water_key].id)
-
-def create_gtpin(pin_key, water_key):
+def create_gtpin():
 
     # Moderator Region
-    add_cell('mod_'+pin_key,
+    add_cell('modGT',
         surfaces = '-{0}'.format(surf_dict['gtIR'].id),
-        universe = pin_key,
-        material = mat_dict['h2o_hzp'].id)
+        universe = 'gt',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'GT moderator')
 
     # Tube Clad
-    add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
-        universe = pin_key,
-        material = mat_dict['zr'].id)
+    add_cell('cladGT',
+        surfaces = '{0}'.format(surf_dict['gtIR'].id),
+        universe = 'gt',
+        material = mat_dict['zr'].id,
+        comment = 'GT clad')
 
-    # Surrounding Water
-    add_cell('water_'+pin_key,
-        surfaces = '{0}'.format(surf_dict['gtOR'].id),
-        universe = pin_key,
-        material = mat_dict[water_key].id)
-
-def create_gtpinDP(pin_key, water_key):
+def create_gtpinDP():
 
     # Moderator Region
-    add_cell('mod_'+pin_key,
+    add_cell('modGTdp',
         surfaces = '-{0}'.format(surf_dict['gtIRdp'].id),
-        universe = pin_key,
-        material = mat_dict['h2o_hzp'].id)
+        universe = 'gtDP',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'GT moderator at DP')
 
     # Tube Clad
-    add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtORdp'].id),
-        universe = pin_key,
-        material = mat_dict['zr'].id)
+    add_cell('cladGTdp',
+        surfaces = '{0}'.format(surf_dict['gtIRdp'].id),
+        universe = 'gtDP',
+        material = mat_dict['zr'].id,
+        comment = 'GT clad at DP')
 
-    # Surrounding Water
-    add_cell('water_'+pin_key,
+def create_fuelpin_cell(cell_key, pin_key, water_key):
+
+    # Fill static fuel pin
+    add_cell('fuelpin_'+cell_key,
+        surfaces = '-{0}'.format(surf_dict['cladOR'].id),
+        universe = cell_key,
+        fill = univ_dict[pin_key].id,
+        comment = 'Fuel pin fill for coolant')
+
+    # Fill in water coolant
+    add_cell('cool_'+cell_key,
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = cell_key,
+        material = mat_dict[water_key].id,
+        comment = 'Coolant around fuel pin')
+
+def create_bppin_cell(cell_key, pin_key, water_key):
+
+    # Fill static bp pin
+    add_cell('bppin_'+cell_key,
+        surfaces = '-{0}'.format(surf_dict['gtOR'].id),
+        universe = cell_key,
+        fill = univ_dict[pin_key].id,
+        comment = 'BP pin fill for coolant')
+
+    # Fill in water coolant
+    add_cell('cool_'+cell_key,
+        surfaces = '{0}'.format(surf_dict['gtOR'].id),
+        universe = cell_key,
+        material = mat_dict[water_key].id,
+        comment = 'Coolant around BP pin')
+
+def create_bppinDP_cell(cell_key, pin_key, water_key):
+
+    # Fill static bp pin at DP
+    add_cell('bppinDP_'+cell_key,
+        surfaces = '-{0}'.format(surf_dict['gtORdp'].id),
+        universe = cell_key,
+        fill = univ_dict[pin_key].id,
+        comment = 'BP pin fill for coolant at DP')
+
+    # Fill in water coolant
+    add_cell('cool_'+cell_key,
         surfaces = '{0}'.format(surf_dict['gtORdp'].id),
-        universe = pin_key,
-        material = mat_dict[water_key].id)
+        universe = cell_key,
+        material = mat_dict[water_key].id,
+        comment = 'Coolant around BP pin at DP')
+
+def create_gtpin_cell(cell_key, pin_key, water_key):
+
+    # Fill static gt pin
+    add_cell('gtpin_'+cell_key,
+        surfaces = '-{0}'.format(surf_dict['gtOR'].id),
+        universe = cell_key,
+        fill = univ_dict[pin_key].id, 
+        comment = 'GT pin fill for coolant')
+
+    # Fill in water coolant
+    add_cell('cool_'+cell_key,
+        surfaces = '{0}'.format(surf_dict['gtOR'].id),
+        universe = cell_key,
+        material = mat_dict[water_key].id,
+        comment = 'Coolant around GT pin')
+
+def create_gtpinDP_cell(cell_key, pin_key, water_key):
+
+    # Fill static bp pin at DP
+    add_cell('gtpinDP_'+cell_key,
+        surfaces = '-{0}'.format(surf_dict['gtORdp'].id),
+        universe = cell_key,
+        fill = univ_dict[pin_key].id,
+        comment = 'GT pin fill for coolant at DP')
+
+    # Fill in water coolant
+    add_cell('cool_'+cell_key,
+        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
+        universe = cell_key,
+        material = mat_dict[water_key].id,
+        comment = 'Coolant around GT pin at DP')
 
 def create_gridstrap():
 
@@ -377,7 +455,8 @@ def create_gridstrap():
     add_cell('water_mod',
         surfaces = '',
         universe = 'mod',
-        material =  mat_dict['h2o_hzp'].id)
+        material =  mat_dict['h2o_hzp'].id,
+        comment = 'Moderator universe')
 
 def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
 
@@ -419,14 +498,16 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
 {wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
 {wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
 {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4}
-""".format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id))
+""".format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id),
+        comment = 'Base lattice')
 
 def create_core():
     add_cell('core',
         surfaces = '{0} -{1} {2} -{3} {4} -{5}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
                                                        surf_dict['core_back'].id, surf_dict['core_front'].id,
                                                        surf_dict['core_bottom'].id, surf_dict['core_top'].id),
-        fill = lat_dict['lat1'].id)
+        fill = lat_dict['lat1'].id, 
+        comment = 'Core fill')
 
 def create_water_material(key, water_density):
 
@@ -586,7 +667,7 @@ entrZ = 10)
     <origin> 0.0 0.0 50.0 </origin>
     <width> {x} {y} </width>
     <basis> xy </basis>
-    <pixels> 6000 6000 </pixels>
+    <pixels> 3000 3000 </pixels>
   </plot>
 
 </plots>""".format(x = assy_pitch, y = assy_pitch)

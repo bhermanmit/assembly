@@ -78,6 +78,8 @@ class Material(object):
         self.sab = Sab(name, xs)
 
     def finalize(self):
+        if mat_dict.has_key(self.key):
+            raise Exception('Material not finalized because of duplicate key - '+self.key)
         mat_dict.update({self.key:self})
 
     def display(self):
@@ -239,9 +241,13 @@ class Lattice(object):
 
 # Global Routines
 def add_surface(key, type, coeffs, bc=None, comment=None):
-     surf_dict.update({key:Surface(type, coeffs, bc, comment)})
+    if surf_dict.has_key(key):
+        raise Exception('Duplicate surface key - '+key)
+    surf_dict.update({key:Surface(type, coeffs, bc, comment)})
 
 def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=None):
+    if cell_dict.has_key(key):
+        raise Exception('Duplicate cell key - '+key)
 
     # Get universe ID
     if universe == None:
@@ -261,4 +267,6 @@ def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=Non
     cell_dict.update({key:Cell(surfaces, universe, fill, material, comment)})
 
 def add_lattice(key, dimension, lower_left, width, universes, comment=None):
+    if lat_dict.has_key(key):
+         raise Exception('Duplicate lattice key - '+key)
     lat_dict.update({key:Lattice(dimension, lower_left, width, universes, comment)})
