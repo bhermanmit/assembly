@@ -265,13 +265,13 @@ def create_bppin(pin_key, water_key):
 
     # Tube Clad
     add_cell('clad_'+pin_key,
-        surfaces = '{0} -{1}'.format(surf_dict['gtIRdp'].id, surf_dict['gtOR'].id),
+        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
         universe = pin_key,
         material = mat_dict['zr'].id)
 
     # Surrounding Water
     add_cell('water_'+pin_key,
-        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
+        surfaces = '{0}'.format(surf_dict['gtOR'].id),
         universe = pin_key,
         material = mat_dict[water_key].id)
 
@@ -577,6 +577,21 @@ entrZ = 10)
         fh.write(set_str)
 
 ############ Plots File ##############
+
+    plot_str = """<?xml version="1.0" encoding="UTF-8"?>
+<plots>
+
+  <plot id="1" type="slice" color="mat">
+    <filename> xy_slice </filename>
+    <origin> 0.0 0.0 50.0 </origin>
+    <width> {x} {y} </width>
+    <basis> xy </basis>
+    <pixels> 6000 6000 </pixels>
+  </plot>
+
+</plots>""".format(x = assy_pitch, y = assy_pitch)
+    with open('plots.xml','w') as fh:
+        fh.write(plot_str)
 
 if __name__ == '__main__':
     main()
