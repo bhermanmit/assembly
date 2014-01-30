@@ -384,35 +384,34 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
         wg_id = univ_dict['mod'].id
 
     # Calculate coordinates
-    left = -19.0*pin_pitch / 2.0
-    right = 19.0*pin_pitch /2.0
+    lleft = -19.0*pin_pitch / 2.0
 
     # Make lattice
     add_lattice(lat_key,
         dimension = '19 19',
-        lower_left = '{0} {0}'.format(left),
-        upper_right = '{0} {0}'.format(right),
+        lower_left = '{0} {0}'.format(lleft),
+        width = '{0} {0}'.format(pin_pitch),
         universes =
 """
-{wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {bp} {fp} {fp} {gt} {fp} {fp} {bp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
-{wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
+{wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4}
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
+{wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4}
 """.format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id))
 
 def create_core():
@@ -488,23 +487,36 @@ def create_water_material(key, water_density):
 
 def write_openmc_input():
 
-    # Geometry
+############ Geometry File ##############
+
+    # Heading info
     geo_str = ""
     geo_str += \
 """<?xml version="1.0" encoding="UTF-8"?>\n<geometry>\n\n"""
-#   for item in OrderedDict(sorted(surf_dict.items(), key=lambda t: t[1].id)):
+
+    # Write out surfaces
     for item in surf_dict.keys():
         geo_str += surf_dict[item].write_xml()
+
+    # Write out cells
+    geo_str += "\n"
+    for item in cell_dict.keys():
+        geo_str += cell_dict[item].write_xml()
+
+    # Write out lattices
+    geo_str += "\n"
+    for item in lat_dict.keys():
+        geo_str += lat_dict[item].write_xml()
+
+    # Write out footer info
     geo_str += \
 """\n</geometry>"""
     with open('geometry.xml','w') as fh:
         fh.write(geo_str)
 
-    # Materials
-
-    # Settings
-
-    # Plots
+############ Materials File ##############
+############ Settings File ##############
+############ Plots File ##############
 
 if __name__ == '__main__':
     main()

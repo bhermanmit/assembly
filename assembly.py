@@ -152,16 +152,29 @@ class Cell(object):
         if self.comment != None:
             print 'Comment: {0}'.format(self.comment)
 
+    def write_xml(self):
+        xml_str = ""
+        if self.fill == None:
+          xml_str += """  <cell id="{id:>6}" universe="{univ:<6}" material="{mat:>6}" surfaces="{surfs:>12}"/>""".format(id = self.id, univ = self.universe, mat = self.material, surfs = self.surfaces)
+        else:
+          xml_str += """  <cell id="{id:>6}" universe="{univ:<6}" fill="{fill:>10}" surfaces="{surfs:>12}"/>""".format(id = self.id, univ = self.universe, fill = self.fill, surfs = self.surfaces)
+        if self.comment != None:
+            xml_str += """  <!--{0:^40}-->""".format(self.comment)
+        xml_str += "\n"
+        return xml_str
+        
+
 class Lattice(object):
     n_lattices = 0
-    def __init__(self, dimension, lower_left, upper_right, universes):
+    def __init__(self, dimension, lower_left, width, universes, comment=None):
         Lattice.n_lattices += 1
         self.id = Lattice.n_lattices
         self.type = "rectangular"
         self.dimension = dimension
         self.lower_left = lower_left
-        self.upper_right = upper_right
+        self.width = width
         self.universes = universes
+        self.comment = comment
 
         # Get lattice dimension
         self.nx = dimension.split()[0]
@@ -172,8 +185,21 @@ class Lattice(object):
         print 'Type: {0}'.format(self.type)
         print 'Dimension: {0}'.format(self.dimension)
         print 'Lower Left: {0}'.format(self.lower_left)
-        print 'Upper Right: {0}'.format(self.upper_right)
+        print 'Width: {0}'.format(self.width)
         print 'Universes: {0}'.format(self.universes)
+        if self.comment != None:
+          print 'Comment: {0}'.format(self.comment)
+
+    def write_xml(self):
+        xml_str = "\n"
+        if self.comment != None:
+            xml_str += """  <!--{0:^40}-->\n""".format(self.comment)
+        xml_str += """  <lattice id="{id:>6}" type="{type}", dimension={dim}>\n""".format(id = self.id, type = self.type, dim = self.dimension)
+        xml_str += """    <lower_left>{lleft}</lower_left>\n""".format(lleft = self.lower_left)
+        xml_str += """    <width>{width}</width>\n""".format(width = self.width)
+        xml_str += """    <universes>{univs}    </universes>\n""".format(univs = self.universes)
+        xml_str += """  </lattice>\n"""
+        return xml_str
 
 # Global Routines
 def add_surface(key, type, coeffs, comment=None):
@@ -198,5 +224,5 @@ def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=Non
     # Add the cell
     cell_dict.update({key:Cell(surfaces, universe, fill, material, comment)})
 
-def add_lattice(key, dimension, lower_left, upper_right, universes):
-    lat_dict.update({key:Lattice(dimension, lower_left, upper_right, universes)})
+def add_lattice(key, dimension, lower_left, width, universes, comment=None):
+    lat_dict.update({key:Lattice(dimension, lower_left, width, universes, comment)})
