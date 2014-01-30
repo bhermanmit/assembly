@@ -78,23 +78,29 @@ class Material(object):
 
 class Surface(object):
     n_surfaces = 0
-    def __init__(self, type, coeffs = "", comment=None):
+    def __init__(self, type, coeffs = "", bc=None, comment=None):
         Surface.n_surfaces += 1
         self.id = Surface.n_surfaces
         self.type = type
         self.coeffs = coeffs
+        self.bc = bc
         self.comment = comment
 
     def display(self):
         print '\nSurface ID: {0}'.format(self.id)
         print 'TYPE: {0}'.format(self.type)
         print 'COEFFICIENTS: {0}'.format(self.coeffs)
+        if self.bc != None:
+            print 'Boundary Condition: {0}'.format(self.bc)
         if self.comment != None:
             print 'COMMENT: {0}'.format(self.comment)
 
     def write_xml(self):
         xml_str = ""
-        xml_str += """  <surface id="{id:>6}" type="{type:<17}" coeffs="{coeffs:>25}"/>""".format(id = self.id, type = self.type, coeffs = self.coeffs)
+        if self.bc == None:
+          xml_str += """  <surface id="{id:>6}" type="{type:<17}" coeffs="{coeffs:>25}"/>""".format(id = self.id, type = self.type, coeffs = self.coeffs)
+        else:
+          xml_str += """  <surface id="{id:>6}" type="{type:<17}" coeffs="{coeffs:>25}" boundary="{bc}"/>""".format(id = self.id, type = self.type, coeffs = self.coeffs, bc = self.bc)
         if self.comment != None:
             xml_str += """  <!--{0:^40}-->""".format(self.comment)
         xml_str += "\n"
@@ -202,8 +208,8 @@ class Lattice(object):
         return xml_str
 
 # Global Routines
-def add_surface(key, type, coeffs, comment=None):
-     surf_dict.update({key:Surface(type, coeffs, comment)})
+def add_surface(key, type, coeffs, bc=None, comment=None):
+     surf_dict.update({key:Surface(type, coeffs, bc, comment)})
 
 def add_cell(key, surfaces, universe=None, fill=None, material=None, comment=None):
 

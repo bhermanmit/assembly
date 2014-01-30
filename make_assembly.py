@@ -161,30 +161,30 @@ def create_static_materials():
 def create_surfaces():
 
     # Create fuel pin surfaces
-    add_surface('fuelOR', 'z-cylinder', '0.0 0.0 0.392180', 'Fuel Outer Radius')
-    add_surface('cladIR', 'z-cylinder', '0.0 0.0 0.400050', 'Clad Inner Radius')
-    add_surface('cladOR', 'z-cylinder', '0.0 0.0 0.457200', 'Clad Outer Radius')
+    add_surface('fuelOR', 'z-cylinder', '0.0 0.0 0.392180', comment = 'Fuel Outer Radius')
+    add_surface('cladIR', 'z-cylinder', '0.0 0.0 0.400050', comment = 'Clad Inner Radius')
+    add_surface('cladOR', 'z-cylinder', '0.0 0.0 0.457200', comment = 'Clad Outer Radius')
 
     # Create Guide Tube surfaces
-    add_surface('gtIR', 'z-cylinder', '0.0 0.0 0.561340', 'Guide Tube Inner Radius above Dashpot')
-    add_surface('gtOR', 'z-cylinder', '0.0 0.0 0.601980', 'Guide Tube Outer Radius above Dashpot')
-    add_surface('gtIRdp', 'z-cylinder', '0.0 0.0 0.504190', 'Guide Tube Inner Radius at Dashpot')
-    add_surface('gtORdp', 'z-cylinder', '0.0 0.0 0.546100', 'Guide Tube Outer Radius at Dashpot')
+    add_surface('gtIR', 'z-cylinder', '0.0 0.0 0.561340', comment = 'Guide Tube Inner Radius above Dashpot')
+    add_surface('gtOR', 'z-cylinder', '0.0 0.0 0.601980', comment = 'Guide Tube Outer Radius above Dashpot')
+    add_surface('gtIRdp', 'z-cylinder', '0.0 0.0 0.504190', comment = 'Guide Tube Inner Radius at Dashpot')
+    add_surface('gtORdp', 'z-cylinder', '0.0 0.0 0.546100', comment = 'Guide Tube Outer Radius at Dashpot')
 
     # Burnable Poison surfaces
-    add_surface('bpIR1', 'z-cylinder', '0.0 0.0 0.214000', 'Burnable Absorber Rod Inner Radius 1')
-    add_surface('bpIR2', 'z-cylinder', '0.0 0.0 0.230510', 'Burnable Absorber Rod Inner Radius 2')
-    add_surface('bpIR3', 'z-cylinder', '0.0 0.0 0.241300', 'Burnable Absorber Rod Inner Radius 3')
-    add_surface('bpIR4', 'z-cylinder', '0.0 0.0 0.426720', 'Burnable Absorber Rod Inner Radius 4')
-    add_surface('bpIR5', 'z-cylinder', '0.0 0.0 0.436880', 'Burnable Absorber Rod Inner Radius 5')
-    add_surface('bpIR6', 'z-cylinder', '0.0 0.0 0.483870', 'Burnable Absorber Rod Inner Radius 6')
+    add_surface('bpIR1', 'z-cylinder', '0.0 0.0 0.214000', comment = 'Burnable Absorber Rod Inner Radius 1')
+    add_surface('bpIR2', 'z-cylinder', '0.0 0.0 0.230510', comment = 'Burnable Absorber Rod Inner Radius 2')
+    add_surface('bpIR3', 'z-cylinder', '0.0 0.0 0.241300', comment = 'Burnable Absorber Rod Inner Radius 3')
+    add_surface('bpIR4', 'z-cylinder', '0.0 0.0 0.426720', comment = 'Burnable Absorber Rod Inner Radius 4')
+    add_surface('bpIR5', 'z-cylinder', '0.0 0.0 0.436880', comment = 'Burnable Absorber Rod Inner Radius 5')
+    add_surface('bpIR6', 'z-cylinder', '0.0 0.0 0.483870', comment = 'Burnable Absorber Rod Inner Radius 6')
 
     # Core surfaces
     box = assy_pitch/2.0
-    add_surface('core_left', 'x-plane', '{0}'.format(-box), 'Core left surface')
-    add_surface('core_right', 'x-plane', '{0}'.format(box), 'Core right surface')
-    add_surface('core_back', 'y-plane', '{0}'.format(-box), 'Core back surface')
-    add_surface('core_front', 'y-plane', '{0}'.format(box), 'Core front surface')
+    add_surface('core_left', 'x-plane', '{0}'.format(-box), 'reflective', 'Core left surface')
+    add_surface('core_right', 'x-plane', '{0}'.format(box), 'reflective', 'Core right surface')
+    add_surface('core_back', 'y-plane', '{0}'.format(-box), 'reflective', 'Core back surface')
+    add_surface('core_front', 'y-plane', '{0}'.format(box), 'reflective', 'Core front surface')
 
 def create_fuelpin(pin_key, water_key):
 
