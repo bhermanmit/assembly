@@ -477,28 +477,40 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
         dimension = '19 19',
         lower_left = '{0} {0}'.format(lleft),
         width = '{0} {0}'.format(pin_pitch),
-        universes =
-"""
-{wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4}
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {gt:>4} {fp:>4} {fp:>4} {bp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {fp:>4} {wg:>4} 
-{wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4} {wg:>4}
-""".format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id),
+        universes = { 'fp': fuel_id,
+                      'pa': bp_id,
+                      'pb': gt_id,
+                      'pc': bp_id,
+                      'pd': bp_id,
+                      'pe': bp_id,
+                      'pf': bp_id,
+                      'pg': gt_id,
+                      'ph': gt_id,
+                      'pi': gt_id,
+                      'pj': bp_id,
+                      'pk': gt_id,
+                      'pl': gt_id,
+                      'pm': gt_id,
+                      'pn': gt_id,
+                      'po': gt_id,
+                      'pp': bp_id,
+                      'pq': gt_id,
+                      'pr': gt_id,
+                      'ps': gt_id,
+                      'pt': bp_id,
+                      'pu': bp_id,
+                      'pv': bp_id,
+                      'pw': bp_id,
+                      'px': gt_id,
+                      'py': bp_id,
+                      'no': wg_id,
+                      'ne': wg_id,
+                      'ea': wg_id,
+                      'se': wg_id,
+                      'so': wg_id,
+                      'sw': wg_id,
+                      'we': wg_id,
+                      'nw': wg_id},
         comment = 'Base lattice')
 
 def create_core():
