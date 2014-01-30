@@ -1,11 +1,14 @@
 #!/usr/bin/env python2
 
+# Packages
+from collections import OrderedDict
+
 # Global Dictionaries
-surf_dict = {}
-cell_dict = {}
-mat_dict = {}
-univ_dict = {}
-lat_dict = {}
+surf_dict = OrderedDict() 
+cell_dict = OrderedDict() 
+mat_dict = OrderedDict()
+univ_dict = OrderedDict()
+lat_dict = OrderedDict()
 
 # Class Definitions
 class Element(object):
@@ -88,6 +91,14 @@ class Surface(object):
         print 'COEFFICIENTS: {0}'.format(self.coeffs)
         if self.comment != None:
             print 'COMMENT: {0}'.format(self.comment)
+
+    def write_xml(self):
+        xml_str = ""
+        xml_str += """  <surface id="{id:>6}" type="{type:<17}" coeffs="{coeffs:>25}"/>""".format(id = self.id, type = self.type, coeffs = self.coeffs)
+        if self.comment != None:
+            xml_str += """  <!--{0:^40}-->""".format(self.comment)
+        xml_str += "\n"
+        return xml_str
 
 class Universe(object):
     n_universes = 0

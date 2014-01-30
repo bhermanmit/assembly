@@ -2,6 +2,7 @@
 
 from assembly import *
 import numpy as np
+from collections import OrderedDict
 
 # Global data
 pin_pitch = 1.25984
@@ -28,11 +29,12 @@ def main():
 
     # Make lattice
     create_lattice('lat1', 'fpin', 'bppin', 'gtpin')
-    lat_dict['lat1'].display()
 
     # Create core
     create_core()
-    cell_dict['core'].display()
+
+    # Write OpenMC files
+    write_openmc_input()
 
 def create_static_materials():
 
@@ -483,6 +485,26 @@ def create_water_material(key, water_density):
     mat_h2o.add_nuclide('O-17', '71c', str(NO17 + NO18))
     mat_h2o.add_sab('lwtr', '15t')
     mat_h2o.finalize()
+
+def write_openmc_input():
+
+    # Geometry
+    geo_str = ""
+    geo_str += \
+"""<?xml version="1.0" encoding="UTF-8"?>\n<geometry>\n\n"""
+#   for item in OrderedDict(sorted(surf_dict.items(), key=lambda t: t[1].id)):
+    for item in surf_dict.keys():
+        geo_str += surf_dict[item].write_xml()
+    geo_str += \
+"""\n</geometry>"""
+    with open('geometry.xml','w') as fh:
+        fh.write(geo_str)
+
+    # Materials
+
+    # Settings
+
+    # Plots
 
 if __name__ == '__main__':
     main()
