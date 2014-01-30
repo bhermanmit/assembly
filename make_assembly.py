@@ -3,6 +3,10 @@
 from assembly import *
 import numpy as np
 
+# Global data
+pin_pitch = 1.25984
+assy_pitch = 21.50364
+
 def main():
 
     # Create all static materials
@@ -25,6 +29,10 @@ def main():
     # Make lattice
     create_lattice('lat1', 'fpin', 'bppin', 'gtpin')
     lat_dict['lat1'].display()
+
+    # Create core
+    create_core()
+    cell_dict['core'].display()
 
 def create_static_materials():
 
@@ -168,6 +176,13 @@ def create_surfaces():
     add_surface('bpIR4', 'z-cylinder', '0.0 0.0 0.426720', 'Burnable Absorber Rod Inner Radius 4')
     add_surface('bpIR5', 'z-cylinder', '0.0 0.0 0.436880', 'Burnable Absorber Rod Inner Radius 5')
     add_surface('bpIR6', 'z-cylinder', '0.0 0.0 0.483870', 'Burnable Absorber Rod Inner Radius 6')
+
+    # Core surfaces
+    box = assy_pitch/2.0
+    add_surface('core_left', 'x-plane', '{0}'.format(-box), 'Core left surface')
+    add_surface('core_right', 'x-plane', '{0}'.format(box), 'Core right surface')
+    add_surface('core_back', 'y-plane', '{0}'.format(-box), 'Core back surface')
+    add_surface('core_front', 'y-plane', '{0}'.format(box), 'Core front surface')
 
 def create_fuelpin(pin_key, water_key):
 
@@ -366,11 +381,15 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
     if not grid:
         wg_id = univ_dict['mod'].id
 
+    # Calculate coordinates
+    left = -19.0*pin_pitch / 2.0
+    right = 19.0*pin_pitch /2.0
+
     # Make lattice
     add_lattice(lat_key,
         dimension = '19 19',
-        lower_left = '',
-        upper_right = '',
+        lower_left = '{0} {0}'.format(left),
+        upper_right = '{0} {0}'.format(right),
         universes =
 """
 {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
@@ -393,6 +412,12 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, grid=False):
 {wg} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {fp} {wg} 
 {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg} {wg}
 """.format(wg = wg_id, fp = fuel_id, bp = bp_id, gt = gt_id))
+
+def create_core():
+    add_cell('core',
+        surfaces = '{0} -{1} {2} -{3}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
+                                              surf_dict['core_back'].id, surf_dict['core_front'].id),
+        fill = lat_dict['lat1'].id)
 
 def create_water_material(key, water_density):
 
