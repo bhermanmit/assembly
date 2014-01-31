@@ -25,7 +25,7 @@ def main():
     create_gridstrap()
 
     # Create water materials 
-    create_water_material('h2o', 0.66)
+    create_water_material('h2o', 0.66, '0 255 255')
 
     # Create static pins
     create_fuelpin()
@@ -60,11 +60,13 @@ def create_static_materials():
     mat_hzph2o.add_nuclide('O-16', '71c', '2.4672e-02')
     mat_hzph2o.add_nuclide('O-17', '71c', '6.0099e-05')
     mat_hzph2o.add_sab('lwtr', '15t')
+    mat_hzph2o.add_color('0 0 255')
     mat_hzph2o.finalize()
 
     # Helium Material
     mat_hel = Material('he', 'Helium for Gap')
     mat_hel.add_nuclide('He-4', '71c', '2.4044e-04')
+    mat_hel.add_color('255 218 185')
     mat_hel.finalize()
 
     # Air Material
@@ -77,6 +79,7 @@ def create_static_materials():
     mat_air.add_nuclide('Ar-36', '71c', '7.9414e-10')
     mat_air.add_nuclide('Ar-38', '71c', '1.4915e-10')
     mat_air.add_nuclide('Ar-40', '71c', '2.3506e-07')
+    mat_air.add_color('255 255 255')
     mat_air.finalize()
 
     # Inconel Material
@@ -98,6 +101,7 @@ def create_static_materials():
     mat_in.add_nuclide('Ni-61', '71c', '4.9094e-04')
     mat_in.add_nuclide('Ni-62', '71c', '1.5653e-03')
     mat_in.add_nuclide('Ni-64', '71c', '3.9864e-04')
+    mat_in.add_color('101 101 101')
     mat_in.finalize()
 
     # Stainless Steel Material
@@ -119,6 +123,7 @@ def create_static_materials():
     mat_ss.add_nuclide('Ni-61', '71c', '9.3917e-05')
     mat_ss.add_nuclide('Ni-62', '71c', '2.9945e-04')
     mat_ss.add_nuclide('Ni-64', '71c', '7.6261e-05')
+    mat_ss.add_color('0 0 0')
     mat_ss.finalize()
 
     # Zircaloy Material
@@ -148,6 +153,7 @@ def create_static_materials():
     mat_zr.add_nuclide('Sn-120', '71c', '1.5697e-04')
     mat_zr.add_nuclide('Sn-122', '71c', '2.2308e-05')
     mat_zr.add_nuclide('Sn-124', '71c', '2.7897e-05')
+    mat_zr.add_color('201 201 201')
     mat_zr.finalize()
 
     # UO2 at 2.4% enrichment Material
@@ -157,6 +163,7 @@ def create_static_materials():
     mat_fuel24.add_nuclide('U-238', '71c', '2.2408e-02')
     mat_fuel24.add_nuclide('O-16', '71c', '4.5829e-02')
     mat_fuel24.add_nuclide('O-17', '71c', '1.1164e-04')
+    mat_fuel24.add_color('255 215 0')
     mat_fuel24.finalize()
 
     # Borosilicate Glass Material
@@ -169,6 +176,7 @@ def create_static_materials():
     mat_bsg.add_nuclide('Si-28', '71c', '1.6924e-02')
     mat_bsg.add_nuclide('Si-29', '71c', '8.5977e-04')
     mat_bsg.add_nuclide('Si-30', '71c', '5.6743e-04')
+    mat_bsg.add_color('0 255 0')
     mat_bsg.finalize()
 
 def create_surfaces():
@@ -975,7 +983,6 @@ def create_lower_regions():
     # Make lattice for support plate
     create_lattice('lat1', 'supplate', 'mod', 'mod', 'gt_hzp')
 
-
 def create_core():
     add_cell('core',
         surfaces = '{0} -{1} {2} -{3} {4} -{5}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
@@ -984,7 +991,12 @@ def create_core():
         fill = lat_dict['lat1'].id, 
         comment = 'Core fill')
 
-def create_water_material(key, water_density):
+    add_plot('plot1',
+        origin = '0.0 0.0 0.0',
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy')
+
+def create_water_material(key, water_density, color=None):
 
     # Avagadros Number
     NA = 0.60221415
@@ -1047,6 +1059,8 @@ def create_water_material(key, water_density):
     mat_h2o.add_nuclide('O-16', '71c', str(NO16))
     mat_h2o.add_nuclide('O-17', '71c', str(NO17 + NO18))
     mat_h2o.add_sab('lwtr', '15t')
+    if color != None:
+        mat_h2o.add_color = color
     mat_h2o.finalize()
 
 def write_openmc_input():
@@ -1134,28 +1148,12 @@ entrZ = 10)
 
 ############ Plots File ##############
 
-    plot_str = """<?xml version="1.0" encoding="UTF-8"?>
-<plots>
-
-  <plot id="1" type="slice" color="mat">
-    <filename> xy_slice </filename>
-    <origin> 0.0 0.0 50.0 </origin>
-    <width> {x} {y} </width>
-    <basis> xy </basis>
-    <pixels> 3000 3000 </pixels>
-      <background>255 0 0</background>
-      <col_spec id="1" rgb="0 0 255"/>
-      <col_spec id="2" rgb="255 218 185"/>
-      <col_spec id="3" rgb="255 255 255"/>
-      <col_spec id="4" rgb="101 101 101"/>
-      <col_spec id="5" rgb="0 0 0"/>
-      <col_spec id="6" rgb="201 201 201"/>
-      <col_spec id="7" rgb="255 215 0"/>
-      <col_spec id="8" rgb="0 255 0"/>
-      <col_spec id="9" rgb="72 209 204"/>
-  </plot>
-
-</plots>""".format(x = assy_pitch+5, y = assy_pitch+5)
+    plot_str = """<?xml version="1.0" encoding="UTF-8"?>\n"""
+    plot_str += """<plots>\n"""
+    for item in plot_dict.keys():
+        plot_str += plot_dict[item].write_xml()
+        plot_str += "\n"
+    plot_str += """</plots>""".format(x = assy_pitch+5, y = assy_pitch+5)
     with open('plots.xml','w') as fh:
         fh.write(plot_str)
 

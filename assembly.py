@@ -9,6 +9,7 @@ cell_dict = OrderedDict()
 mat_dict = OrderedDict()
 univ_dict = OrderedDict()
 lat_dict = OrderedDict()
+plot_dict = OrderedDict()
 
 # Global templates
 pin_lattice ="""
@@ -90,6 +91,7 @@ class Material(object):
         self.sab = None
         self.key = key
         self.comment = comment
+        self.color = None 
 
     def add_element(self, name, xs, value):
         self.elements.append(Element(name, xs, value))
@@ -99,6 +101,9 @@ class Material(object):
 
     def add_sab(self, name, xs):
         self.sab = Sab(name, xs)
+
+    def add_color(self, color):
+        self.color = color
 
     def finalize(self):
         if mat_dict.has_key(self.key):
@@ -115,6 +120,10 @@ class Material(object):
             item.display()
         print 'S(a,b):'
         self.sab.display()
+        if self.comment != None:
+            print 'Comment: {0}'.format(self.comment)
+        if self.color != None:
+            print 'Color: {0}'.format(self.color)
 
     def write_xml(self):
         xml_str = ""
@@ -262,6 +271,53 @@ class Lattice(object):
         xml_str += """  </lattice>\n"""
         return xml_str
 
+class Plot(object):
+    n_plots = 0
+    def __init__(self, origin, width, basis, type='slice', color='mat', pixels="3000 3000", background='255 0 0', filename=None, comment=None):
+        Plot.n_plots += 1
+        self.id = Plot.n_plots
+        self.origin = origin
+        self.width = width
+        self.basis = basis
+        self.type = type
+        self.color = color
+        self.pixels = pixels
+        self.background = background
+        self.filename = filename
+        if self.filename == None:
+            self.filename = 'plot_{0}'.format(self.id)
+        self.comment = comment
+
+    def display(self):
+        print '\nPlot ID: {0}'.format(self.id)
+        print 'Origin: {0}'.format(self.origin)
+        print 'Width: {0}'.format(self.width)
+        print 'Basis: {0}'.format(self.basis)
+        print 'Type: {0}'.format(self.type)
+        print 'Color: {0}'.format(self.color)
+        print 'Pixels: {0}'.format(self.pixels)
+        print 'Background: {0}'.format(self.background)
+        print 'Filename: {0}'.format(self.filename)
+        if self.comment != None:
+            print 'Comment: {0}'.format(self.comment)
+
+    def write_xml(self):
+        xml_str = "\n"
+        if self.comment != None:
+            xml_str += """  <!--{0:^40}-->\n""".format(self.comment)
+        xml_str += """  <plot id="{id}" type="{type}" color="{col}">\n""".format(id = self.id, type = self.type, col = self.color)
+        xml_str += """      <filename>{fname}</filename>\n""".format(fname = self.filename)
+        xml_str += """      <origin> {origin} </origin>\n""".format(origin = self.origin)
+        xml_str += """      <width> {width} </width>\n""".format(width = self.width)
+        xml_str += """      <basis> {basis} </basis>\n""".format(basis = self.basis)
+        xml_str += """      <pixels>{pixels}</pixels>\n""".format(pixels = self.pixels)
+        xml_str += """      <background>{background}</background>\n""".format(background = self.background)
+        for item in mat_dict.keys():
+            if mat_dict[item].color != None:
+                xml_str += """      <col_spec id="{id}" rgb="{rgb}"/>\n""".format(id = mat_dict[item].id, rgb = mat_dict[item].color)
+        xml_str += """  </plot>\n"""
+        return xml_str
+
 # Global Routines
 def add_surface(key, type, coeffs, bc=None, comment=None):
     if surf_dict.has_key(key):
@@ -293,3 +349,8 @@ def add_lattice(key, dimension, lower_left, width, universes, comment=None):
     if lat_dict.has_key(key):
          raise Exception('Duplicate lattice key - '+key)
     lat_dict.update({key:Lattice(dimension, lower_left, width, universes, comment)})
+
+def add_plot(key, origin, width, basis, type='slice', color='mat', pixels="3000 3000", background='255 0 0', filename=None, comment=None):
+    if plot_dict.has_key(key):
+         raise Exception('Duplicate plot key - '+key)
+    plot_dict.update({key:Plot(origin, width, basis, type, color, pixels, background, filename, comment)})
