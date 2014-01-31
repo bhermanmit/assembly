@@ -8,10 +8,17 @@ from collections import OrderedDict
 batches = 500
 inactive = 100
 particles = 1000
+n_water = 20
 
 # Global data
 pin_pitch = 1.25984
 assy_pitch = 21.50364
+active_core_height = 365.76
+lowest_extent = 0.0
+lower_plenum = 20.0
+support_plate = 35.16 
+bottom_rod = 36.007
+highest_extent = support_plate
 
 def main():
 
@@ -39,6 +46,12 @@ def main():
 
     # Create lower regions
     create_lower_regions()
+
+    # Create axial regions
+    create_axial_regions() 
+
+    # Make assembly
+#   create_assembly()
 
     # Make lattice
 #   create_lattice('lat1', 'fp1', 'bp1', 'gt1', 'gt1', grid='TB')
@@ -229,8 +242,8 @@ def create_surfaces():
     add_surface('core_right', 'x-plane', '{0}'.format(box), 'reflective', 'Core right surface')
     add_surface('core_back', 'y-plane', '{0}'.format(-box), 'reflective', 'Core back surface')
     add_surface('core_front', 'y-plane', '{0}'.format(box), 'reflective', 'Core front surface')
-    add_surface('core_bottom', 'z-plane', '0.0', 'reflective', 'Core back surface')
-    add_surface('core_top', 'z-plane', '100.0', 'reflective', 'Core front surface')
+    add_surface('core_bottom', 'z-plane', '{0}'.format(lowest_extent), 'reflective', 'Core bottom surface')
+    add_surface('core_top', 'z-plane', '{0}'.format(highest_extent), 'reflective', 'Core top surface')
 
 def create_fuelpin():
 
@@ -981,20 +994,53 @@ def create_lower_regions():
     create_gtpin_cell('gt_hzp', 'gt', 'h2o_hzp')
 
     # Make lattice for support plate
-    create_lattice('lat1', 'supplate', 'mod', 'mod', 'gt_hzp')
+    create_lattice('support_plate', 'supplate', 'mod', 'mod', 'gt_hzp')
+
+def create_axial_regions():
+
+    # Add lower plenum region 
+    add_surface('lower_plenum', 'z-plane', '{0}'.format(lower_plenum), comment = 'Bottom Support Plate')
+    add_cell('lower_plenum',
+        surfaces = '-{0}'.format(surf_dict['lower_plenum'].id),
+        universe = 'assembly',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'Lower Plenum')
+    add_plot('plot_lower_plenum',
+        origin = '0.0 0.0 {0}'.format(0.5*(lowest_extent + lower_plenum)),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'lower_plenum')
+
+    # Add support plate 
+#   add_surface('support_plate', 'z-plane', '{0}'.format(support_plate), comment = 'Top Support Plate')
+    add_cell('support_plate',
+#        surfaces = '{0} -{1}'.format(surf_dict['lower_plenum'].id, surf_dict['support_plate']),
+        surfaces = '{0}'.format(surf_dict['lower_plenum'].id),
+        universe = 'assembly',
+        fill = lat_dict['support_plate'].id,
+        comment = 'Support Plate')
+    add_plot('plot_support_plate',
+        origin = '0.0 0.0 {0}'.format(0.5*(lower_plenum + support_plate)),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'support_plate')
+
+    # Compute water region thickness
+    water_size = active_core_height/float(n_water)
 
 def create_core():
     add_cell('core',
         surfaces = '{0} -{1} {2} -{3} {4} -{5}'.format(surf_dict['core_left'].id, surf_dict['core_right'].id,
                                                        surf_dict['core_back'].id, surf_dict['core_front'].id,
                                                        surf_dict['core_bottom'].id, surf_dict['core_top'].id),
-        fill = lat_dict['lat1'].id, 
+        fill = univ_dict['assembly'].id,
         comment = 'Core fill')
 
-    add_plot('plot1',
-        origin = '0.0 0.0 0.0',
-        width = '{0} {0}'.format(assy_pitch+5),
-        basis = 'xy')
+    add_plot('plot_axial',
+        origin = '0.0 0.0 {0}'.format(0.5*(highest_extent + lowest_extent)),
+        width = '{0} {1}'.format(assy_pitch+5, highest_extent - lowest_extent + 5),
+        basis = 'xz',
+        filename = 'axial')
 
 def create_water_material(key, water_density, color=None):
 
