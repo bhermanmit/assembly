@@ -11,21 +11,76 @@ particles = 1000
 n_water = 20
 
 # Global data
-pin_pitch = 1.25984
-assy_pitch = 21.50364
-active_core_height = 365.76
-lowest_extent = 0.0
-lower_plenum = 20.0
-support_plate = 35.16 
-bottom_rod = 36.007
-highest_extent = support_plate
+pin_pitch = 1.25984              # Pin pitch
+assy_pitch = 21.50364            # Assembly pitch
+active_core_height = 365.76      # Active core height
+axial_surfaces = { 
+'lowest_extent':0.0,             # Lowest plane of model
+'lower_plenum':20.0,             # Top of lower plenum/Bottom Support Plate
+'support_plate':35.16,           # Top of Support plate/Bottom of Fuel Rod
+'baf':36.007,                    # Bottom of Active Fuel
+'grid1bot':37.8790,              # Grid 1 Bottom
+'bpbot':41.0870,                 # Bottom of Burnable Absorbers
+'grid1top':42.0700,              # Grid 1 Top
+'dptop':45.0790,                 # Dashpot Top
+'grid2bot':99.1640,              # Grid 2 Bottom
+'grid2top':104.879,              # Grid 2 Top
+'grid3bot':151.361,              # Grid 3 Bottom
+'grid3top':157.076,              # Grid 3 Top
+'grid4bot':203.558,              # Grid 4 Bottom
+'grid4top':209.273,              # Grid 4 Top
+'grid5bot':255.755,              # Grid 5 Bottom
+'grid5top':261.470,              # Grid 5 Top
+'grid6bot':307.952,              # Grid 6 Bottom
+'grid6top':313.667,              # Grid 6 Top
+'grid7bot':360.149,              # Grid 7 Bottom
+'grid7top':365.864,              # Grid 7 Top
+'taf':401.767,                   # Top of Active Fuel
+'grid8bot':412.529,              # Grid 8 Bottom
+'grid8top':416.720,              # Grid 8 Top
+'topplugbot':421.223,            # Bottom of Top End Plug
+'rodtop':423.272,                # Top of fuel rod
+'nozzlebot':426.617,             # Bottom of Nozzle
+'nozzletop':435.444,             # Top of Nozzle
+'highest_extent':455.444         # Highest plane of problem 
+}
+
+axial_labels = [
+'Lowest plane of model',
+'Top of lower plenum/Bottom Support Plate',
+'Top of Support plate/Bottom of Fuel Rod',
+'Bottom of Active Fuel',
+'Grid 1 Bottom',
+'Bottom of Burnable Absorbers',
+'Grid 1 Top',
+'Dashpot Top',
+'Grid 2 Bottom',
+'Grid 2 Top',
+'Grid 3 Bottom',
+'Grid 3 Top',
+'Grid 4 Bottom',
+'Grid 4 Top',
+'Grid 5 Bottom',
+'Grid 5 Top',
+'Grid 6 Bottom',
+'Grid 6 Top',
+'Grid 7 Bottom',
+'Grid 7 Top',
+'Top of Active Fuel',
+'Grid 8 Bottom',
+'Grid 8 Top',
+'Bottom of Top End Plug',
+'Top of fuel rod',
+'Bottom of Nozzle',
+'Top of Nozzle',
+'Highest plane of problem']
 
 def main():
 
     # Create all static materials
     create_static_materials()
 
-    # Create all surfaces
+    # Create surfaces
     create_surfaces()
 
     # Create grid info
@@ -48,10 +103,10 @@ def main():
     create_lower_regions()
 
     # Create axial regions
-    create_axial_regions() 
+    create_axial_regions()
 
     # Make assembly
-#   create_assembly()
+    create_assembly()
 
     # Make lattice
 #   create_lattice('lat1', 'fp1', 'bp1', 'gt1', 'gt1', grid='TB')
@@ -242,8 +297,8 @@ def create_surfaces():
     add_surface('core_right', 'x-plane', '{0}'.format(box), 'reflective', 'Core right surface')
     add_surface('core_back', 'y-plane', '{0}'.format(-box), 'reflective', 'Core back surface')
     add_surface('core_front', 'y-plane', '{0}'.format(box), 'reflective', 'Core front surface')
-    add_surface('core_bottom', 'z-plane', '{0}'.format(lowest_extent), 'reflective', 'Core bottom surface')
-    add_surface('core_top', 'z-plane', '{0}'.format(highest_extent), 'reflective', 'Core top surface')
+    add_surface('core_bottom', 'z-plane', '{0}'.format(axial_surfaces['lowest_extent']), 'reflective', 'Core bottom surface')
+    add_surface('core_top', 'z-plane', '{0}'.format(axial_surfaces['highest_extent']), 'reflective', 'Core top surface')
 
 def create_fuelpin():
 
@@ -998,21 +1053,84 @@ def create_lower_regions():
 
 def create_axial_regions():
 
+    # Compute water region thickness
+    water_size = active_core_height/float(n_water)
+
+    more = True
+    water_planes = []
+    current_plane = axial_surfaces['baf']
+    while(more):
+        current_plane += water_size
+        water_planes.append(current_plane)
+        if current_plane + water_size > axial_surfaces['taf']:
+            more = False
+
+    # Add lower core surfaces
+    add_surface('lower_plenum', 'z-plane', '{0}'.format(axial_surfaces['lower_plenum']), comment = 'Bottom Support Plate')
+    add_surface('support_plate', 'z-plane', '{0}'.format(axial_surfaces['support_plate']), comment = 'Top Support Plate')
+
+    # Begin loop from BAF to TAF
+    add_surface('baf', 'z-plane', '{0}'.format(axial_surfaces['baf']), comment = 'Bottom of Active Fuel')
+    bottom_surface = ['baf']
+    top_surface = []
+    grids = []
+    label_idx = 0
+    grid = False
+    for plane in OrderedDict(sorted(axial_surfaces.items(), key=lambda t: t[1])):
+
+        # start above baf
+        if axial_surfaces[plane] <= axial_surfaces['baf']:
+            continue
+
+        # stop after taf
+        if axial_surfaces[plane] >= axial_surfaces['taf']:
+            break
+        # check for grid
+        grids.append(grid)
+        if 'grid' in plane and 'bot' in plane:
+            grid = True
+        elif 'grid' in plane and 'top' in plane:
+            grid = False
+
+        # add surface
+        add_surface(plane, 'z-plane', '{0}'.format(axial_surfaces[plane]), comment = axial_labels[label_idx])
+        bottom_surface.append(plane)
+        top_surface.append(plane)
+        label_idx += 1
+    add_surface('taf', 'z-plane', '{0}'.format(axial_surfaces['taf']), comment = 'Top of Active Fuel')
+    top_surface.append('taf')
+    grids.append(grid)
+
+    # Loop around axial regions
+    for i in range(len(bottom_surface)):
+        bottom = bottom_surface[i]
+        top = top_surface[i]
+        if axial_surfaces[top] <= axial_surfaces['dptop']:
+            dp = True
+        else:
+            dp = False
+        grid = grids[i]
+        add_axial('{0}_{1}'.format(axial_labels[i+3], axial_labels[i+4]),
+            bottom = bottom,
+            top = top,
+            dp = dp,
+            grid = grid)
+
+def create_assembly():
+
     # Add lower plenum region 
-    add_surface('lower_plenum', 'z-plane', '{0}'.format(lower_plenum), comment = 'Bottom Support Plate')
     add_cell('lower_plenum',
         surfaces = '-{0}'.format(surf_dict['lower_plenum'].id),
         universe = 'assembly',
         material = mat_dict['h2o_hzp'].id,
         comment = 'Lower Plenum')
     add_plot('plot_lower_plenum',
-        origin = '0.0 0.0 {0}'.format(0.5*(lowest_extent + lower_plenum)),
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['lowest_extent'] + axial_surfaces['lower_plenum'])),
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'lower_plenum')
 
     # Add support plate 
-#   add_surface('support_plate', 'z-plane', '{0}'.format(support_plate), comment = 'Top Support Plate')
     add_cell('support_plate',
 #        surfaces = '{0} -{1}'.format(surf_dict['lower_plenum'].id, surf_dict['support_plate']),
         surfaces = '{0}'.format(surf_dict['lower_plenum'].id),
@@ -1020,13 +1138,10 @@ def create_axial_regions():
         fill = lat_dict['support_plate'].id,
         comment = 'Support Plate')
     add_plot('plot_support_plate',
-        origin = '0.0 0.0 {0}'.format(0.5*(lower_plenum + support_plate)),
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['lower_plenum'] + axial_surfaces['support_plate'])),
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'support_plate')
-
-    # Compute water region thickness
-    water_size = active_core_height/float(n_water)
 
 def create_core():
     add_cell('core',
@@ -1037,8 +1152,8 @@ def create_core():
         comment = 'Core fill')
 
     add_plot('plot_axial',
-        origin = '0.0 0.0 {0}'.format(0.5*(highest_extent + lowest_extent)),
-        width = '{0} {1}'.format(assy_pitch+5, highest_extent - lowest_extent + 5),
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['highest_extent'] + axial_surfaces['lowest_extent'])),
+        width = '{0} {1}'.format(assy_pitch+5, axial_surfaces['highest_extent'] - axial_surfaces['lowest_extent'] + 5),
         basis = 'xz',
         filename = 'axial')
 

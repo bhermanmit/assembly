@@ -10,6 +10,7 @@ mat_dict = OrderedDict()
 univ_dict = OrderedDict()
 lat_dict = OrderedDict()
 plot_dict = OrderedDict()
+axial_dict = OrderedDict()
 
 # Global templates
 pin_lattice ="""
@@ -318,6 +319,19 @@ class Plot(object):
         xml_str += """  </plot>\n"""
         return xml_str
 
+class AxialRegion(object):
+    def __init__(self, bottom, top, dp, grid):
+        self.bottom = bottom
+        self.top = top
+        self.dp = dp
+        self.grid = grid        
+
+    def display(self):
+        print 'Bottom: {0}'.format(self.bottom)
+        print '  Dashpot: {0}'.format(self.dp)
+        print '  Grid: {0}'.format(self.grid)
+        print 'Top: {0}'.format(self.top)
+
 # Global Routines
 def add_surface(key, type, coeffs, bc=None, comment=None):
     if surf_dict.has_key(key):
@@ -354,3 +368,7 @@ def add_plot(key, origin, width, basis, type='slice', color='mat', pixels="3000 
     if plot_dict.has_key(key):
          raise Exception('Duplicate plot key - '+key)
     plot_dict.update({key:Plot(origin, width, basis, type, color, pixels, background, filename, comment)})
+def add_axial(key, bottom, top, dp, grid):
+    if axial_dict.has_key(key):
+        raise Exception('Duplicate axial key - '+key)
+    axial_dict.update({key:AxialRegion(bottom, top, dp, grid)})
