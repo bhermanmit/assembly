@@ -1064,7 +1064,7 @@ def create_axial_regions():
         water_planes.append(current_plane)
         if current_plane + water_size > axial_surfaces['taf']:
             more = False
-
+    print water_planes
     # Add lower core surfaces
     add_surface('lower_plenum', 'z-plane', '{0}'.format(axial_surfaces['lower_plenum']), comment = 'Bottom Support Plate')
     add_surface('support_plate', 'z-plane', '{0}'.format(axial_surfaces['support_plate']), comment = 'Top Support Plate')
@@ -1075,6 +1075,7 @@ def create_axial_regions():
     top_surface = []
     grids = []
     label_idx = 0
+    water_idx = 0
     grid = False
     for plane in OrderedDict(sorted(axial_surfaces.items(), key=lambda t: t[1])):
 
@@ -1085,12 +1086,27 @@ def create_axial_regions():
         # stop after taf
         if axial_surfaces[plane] >= axial_surfaces['taf']:
             break
+
         # check for grid
         grids.append(grid)
         if 'grid' in plane and 'bot' in plane:
             grid = True
         elif 'grid' in plane and 'top' in plane:
             grid = False
+
+        # check if we hit a water plane first
+        label = axial_labels[label_idx]
+        subplane = 1
+        while water_planes[water_idx] < axial_surfaces[plane]:
+            axial_labels.insert(label_idx,label + 'Water Region {0}'.format(subplane))
+            add_surface(plane+'_water {0}'.format(subplane), 'z-plane', '{0}'.format(water_planes[water_idx]), comment = axial_labels[label_idx])
+            bottom_surface.append(plane+'_water {0}'.format(subplane))
+            top_surface.append(plane+'_water {0}'.format(subplane))
+            axial_surfaces.update({plane+'_water {0}'.format(subplane):water_planes[water_idx]})
+            label_idx += 1
+            water_idx += 1
+            subplane += 1
+            grids.append(grid)
 
         # add surface
         add_surface(plane, 'z-plane', '{0}'.format(axial_surfaces[plane]), comment = axial_labels[label_idx])
@@ -1115,6 +1131,10 @@ def create_axial_regions():
             top = top,
             dp = dp,
             grid = grid)
+
+    for item in axial_dict.keys():
+        axial_dict[item].display()
+        print ''
 
 def create_assembly():
 

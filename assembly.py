@@ -327,10 +327,10 @@ class AxialRegion(object):
         self.grid = grid        
 
     def display(self):
-        print 'Bottom: {0}'.format(self.bottom)
+        print 'Bottom: {0} {1}'.format(self.bottom, surf_dict[self.bottom].coeffs)
         print '  Dashpot: {0}'.format(self.dp)
         print '  Grid: {0}'.format(self.grid)
-        print 'Top: {0}'.format(self.top)
+        print 'Top: {0} {1}'.format(self.top, surf_dict[self.top].coeffs)
 
 # Global Routines
 def add_surface(key, type, coeffs, bc=None, comment=None):
