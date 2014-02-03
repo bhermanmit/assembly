@@ -11,6 +11,8 @@ particles = 1000
 n_water = 20
 
 # Global data
+hzp_density = 0.73986            # Highest density
+low_density = 0.66               # Lowest density
 pin_pitch = 1.25984              # Pin pitch
 assy_pitch = 21.50364            # Assembly pitch
 active_core_height = 365.76      # Active core height
@@ -1060,6 +1062,7 @@ def create_axial_regions():
     # Compute water region thickness
     water_size = active_core_height/float(n_water)
 
+    # Determine where water planes are
     more = True
     water_planes = []
     current_plane = axial_surfaces['baf']
@@ -1068,7 +1071,11 @@ def create_axial_regions():
         water_planes.append(current_plane)
         if current_plane + water_size > axial_surfaces['taf']:
             more = False
-    print water_planes
+
+    # Set up function for water density calculation
+    d_rho = (hzp_density - low_density) / float(n_water - 1)
+    def coolant_density(idx): return hzp_density - d_rho*float(idx + 1)
+
     # Add lower core surfaces
     add_surface('lower_plenum', 'z-plane', '{0}'.format(axial_surfaces['lower_plenum']), comment = 'Bottom Support Plate')
     add_surface('support_plate', 'z-plane', '{0}'.format(axial_surfaces['support_plate']), comment = 'Top Support Plate')
@@ -1122,6 +1129,7 @@ def create_axial_regions():
     grids.append(grid)
 
     # Loop around axial regions
+    water_idx = 0
     for i in range(len(bottom_surface)):
         bottom = bottom_surface[i]
         top = top_surface[i]
@@ -1134,11 +1142,10 @@ def create_axial_regions():
             bottom = bottom,
             top = top,
             dp = dp,
-            grid = grid)
-
-    for item in axial_dict.keys():
-        axial_dict[item].display()
-        print ''
+            grid = grid,
+            cool_rho = coolant_density(water_idx))
+        if water_planes[water_idx] == axial_surfaces[top]:
+            water_idx += 1
 
 def create_assembly():
 
@@ -1178,8 +1185,16 @@ def create_assembly():
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'bottom_fuel')
-    for key in plot_dict.keys():
-        plot_dict[key].display()
+
+    # Build active core
+    i = 0
+    for item in axial_dict.keys():
+        if i > 1000:
+            break
+        axial_dict[item].display()
+        print ''
+        i += 1
+
 
 def create_core():
     add_cell('core',

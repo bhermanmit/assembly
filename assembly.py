@@ -274,7 +274,7 @@ class Lattice(object):
 
 class Plot(object):
     n_plots = 0
-    def __init__(self, origin, width, basis, type='slice', color='mat', pixels="3000 3000", background='255 0 0', filename=None, comment=None):
+    def __init__(self, origin, width, basis, type='slice', color='mat', pixels="1000 1000", background='255 0 0', filename=None, comment=None):
         Plot.n_plots += 1
         self.id = Plot.n_plots
         self.origin = origin
@@ -320,16 +320,18 @@ class Plot(object):
         return xml_str
 
 class AxialRegion(object):
-    def __init__(self, bottom, top, dp, grid):
+    def __init__(self, bottom, top, dp, grid, cool_rho):
         self.bottom = bottom
         self.top = top
         self.dp = dp
-        self.grid = grid        
+        self.grid = grid
+        self.cool_rho = cool_rho
 
     def display(self):
         print 'Bottom: {0} {1}'.format(self.bottom, surf_dict[self.bottom].coeffs)
         print '  Dashpot: {0}'.format(self.dp)
         print '  Grid: {0}'.format(self.grid)
+        print ' Water: {0}'.format(self.cool_rho)
         print 'Top: {0} {1}'.format(self.top, surf_dict[self.top].coeffs)
 
 # Global Routines
@@ -368,7 +370,7 @@ def add_plot(key, origin, width, basis, type='slice', color='mat', pixels="3000 
     if plot_dict.has_key(key):
          raise Exception('Duplicate plot key - '+key)
     plot_dict.update({key:Plot(origin, width, basis, type, color, pixels, background, filename, comment)})
-def add_axial(key, bottom, top, dp, grid):
+def add_axial(key, bottom, top, dp, grid, cool_rho):
     if axial_dict.has_key(key):
         raise Exception('Duplicate axial key - '+key)
-    axial_dict.update({key:AxialRegion(bottom, top, dp, grid)})
+    axial_dict.update({key:AxialRegion(bottom, top, dp, grid, cool_rho)})
