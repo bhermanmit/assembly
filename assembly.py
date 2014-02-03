@@ -12,6 +12,14 @@ lat_dict = OrderedDict()
 plot_dict = OrderedDict()
 axial_dict = OrderedDict()
 
+# Item counters
+n_materials = 0
+n_surfaces = 0
+n_cells = 0
+n_universes = 0
+n_lattices = 0
+n_plots = 0
+
 # Global templates
 pin_lattice ="""
 {nw:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {no:>4} {ne:>4}
@@ -83,10 +91,10 @@ class Sab(object):
         return xml_str
 
 class Material(object):
-    n_materials = 0
     def __init__(self, key, comment = None):
-        Material.n_materials += 1
-        self.id = Material.n_materials
+        global n_materials
+        n_materials += 1
+        self.id = n_materials
         self.elements = []
         self.nuclides = []
         self.sab = None
@@ -142,10 +150,10 @@ class Material(object):
         return xml_str
 
 class Surface(object):
-    n_surfaces = 0
     def __init__(self, type, coeffs = "", bc=None, comment=None):
-        Surface.n_surfaces += 1
-        self.id = Surface.n_surfaces
+        global n_surfaces
+        n_surfaces += 1
+        self.id = n_surfaces
         self.type = type
         self.coeffs = coeffs
         self.bc = bc
@@ -172,13 +180,13 @@ class Surface(object):
         return xml_str
 
 class Universe(object):
-    n_universes = 0
     def __init__(self, value=None):
+        global n_universes
         if value != None:
             self.id = value 
         else:
-            Universe.n_universes += 1
-            self.id = 9 + Universe.n_universes
+            n_universes += 1
+            self.id = n_universes
         self.cells = []
 
     def add_cell(self, key):
@@ -191,8 +199,9 @@ class Universe(object):
 class Cell(object):
     n_cells = 0
     def __init__(self, surfaces, universe=None, fill=None, material=None, comment=None):
-        Cell.n_cells += 1
-        self.id = Cell.n_cells
+        global n_cells
+        n_cells += 1
+        self.id = n_cells
         self.fill = fill
         self.material = material
         self.surfaces = surfaces
@@ -236,10 +245,11 @@ class Cell(object):
         
 
 class Lattice(object):
-    n_lattices = 0
     def __init__(self, dimension, lower_left, width, universes, comment=None):
-        Lattice.n_lattices += 1
-        self.id = Lattice.n_lattices
+        global n_lattices, n_universes
+        n_lattices += 1
+        n_universes += 1
+        self.id = n_universes
         self.type = "rectangular"
         self.dimension = dimension
         self.lower_left = lower_left
@@ -273,10 +283,10 @@ class Lattice(object):
         return xml_str
 
 class Plot(object):
-    n_plots = 0
     def __init__(self, origin, width, basis, type='slice', color='mat', pixels="1000 1000", background='255 0 0', filename=None, comment=None):
-        Plot.n_plots += 1
-        self.id = Plot.n_plots
+        global n_plots
+        n_plots += 1
+        self.id = n_plots
         self.origin = origin
         self.width = width
         self.basis = basis
@@ -368,7 +378,7 @@ def add_lattice(key, dimension, lower_left, width, universes, comment=None):
          raise Exception('Duplicate lattice key - '+key)
     lat_dict.update({key:Lattice(dimension, lower_left, width, universes, comment)})
 
-def add_plot(key, origin, width, basis, type='slice', color='mat', pixels="3000 3000", background='255 0 0', filename=None, comment=None):
+def add_plot(key, origin, width, basis, type='slice', color='mat', pixels="1000 1000", background='255 0 0', filename=None, comment=None):
     if plot_dict.has_key(key):
          raise Exception('Duplicate plot key - '+key)
     plot_dict.update({key:Plot(origin, width, basis, type, color, pixels, background, filename, comment)})

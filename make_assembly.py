@@ -91,7 +91,9 @@ def main():
     # Create static pins
     create_fuelpin()
     create_bppin()
+    create_bppinDP()
     create_gtpin()
+    create_gtpinDP()
 
     # Create lower regions
     create_lower_regions()
@@ -620,7 +622,7 @@ def create_bppinDP_cell(cell_key, pin_key, water_key, grid = None):
 
         # Fill in water coolant
         add_cell('cool_'+cell_key,
-            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtORdp'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
                                                       surf_dict[gridback].id, surf_dict[gridfront].id),
             universe = cell_key,
             material = mat_dict[water_key].id,
@@ -652,7 +654,7 @@ def create_bppinDP_cell(cell_key, pin_key, water_key, grid = None):
 
         # Fill in water coolant
         add_cell('cool_'+cell_key,
-            surfaces = '{0}'.format(surf_dict['gtOR'].id),
+            surfaces = '{0}'.format(surf_dict['gtdpOR'].id),
             universe = cell_key,
             material = mat_dict[water_key].id,
             comment = 'Coolant around BP pin at DP')
@@ -740,7 +742,7 @@ def create_gtpinDP_cell(cell_key, pin_key, water_key, grid = None):
 
         # Fill in water coolant
         add_cell('cool_'+cell_key,
-            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtOR'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
+            surfaces = '{0} {1} -{2} {3} -{4}'.format(surf_dict['gtORdp'].id, surf_dict[gridleft].id, surf_dict[gridright].id,
                                                       surf_dict[gridback].id, surf_dict[gridfront].id),
             universe = cell_key,
             material = mat_dict[water_key].id,
@@ -780,17 +782,10 @@ def create_gtpinDP_cell(cell_key, pin_key, water_key, grid = None):
 
         # Fill in water coolant
         add_cell('cool_'+cell_key,
-            surfaces = '{0}'.format(surf_dict['gtOR'].id),
+            surfaces = '{0}'.format(surf_dict['gtORdp'].id),
             universe = cell_key,
             material = mat_dict[water_key].id,
             comment = 'Coolant around GT pin at DP')
-
-    # Fill in water coolant
-    add_cell('cool_'+cell_key,
-        surfaces = '{0}'.format(surf_dict['gtORdp'].id),
-        universe = cell_key,
-        material = mat_dict[water_key].id,
-        comment = 'Coolant around GT pin at DP')
 
 def create_gridstrap():
 
@@ -945,7 +940,7 @@ def create_gridstrap():
             material = mat_dict['h2o_hzp'].id,
             comment = 'Mod northwest of {0} northest grid strap'.format(gridmat))
 
-def create_lattice(lat_key, fuel_key, bp_key, gt_key, it_key, grid=False):
+def create_lattice(lat_key, fuel_key, bp_key, gt_key, it_key, grid=False, comment = None):
 
     # Get ids
     fuel_id = univ_dict[fuel_key].id
@@ -1025,7 +1020,7 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, it_key, grid=False):
                       'sw': sw_id,
                       'we': we_id,
                       'nw': nw_id},
-        comment = 'Base lattice')
+        comment = comment)
 
 def create_lower_regions():
 
@@ -1043,11 +1038,21 @@ def create_lower_regions():
     create_gtpin_cell('gt_hzp', 'gt', 'h2o_hzp')
 
     # Make lattice for support plate
-    create_lattice('support_plate', 'supplate', 'mod', 'mod', 'gt_hzp')
+    create_lattice('support_plate', 'supplate', 'mod', 'mod', 'gt_hzp', comment = 'Support Plate')
 
     # Bottom of Fuel Rod lattice
-    create_fuelpin_cell('fp_hzp', 'fuel', 'h2o_hzp')
-    create_lattice('bottom_fuel', 'fp_hzp', 'gt_hzp', 'gt_hzp', 'gt_hzp')
+    add_cell('rodpin', 
+        surfaces = '-{0}'.format(surf_dict['cladOR'].id), 
+        universe = 'botfpin',
+        material = mat_dict['zr'].id,
+        comment = 'Bottom Fuel Rod pin')
+    add_cell('rodmod',
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = 'botfpin',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'Moderator around Bottom Fuel Rod')
+    create_gtpin_cell('gtDP_hzp', 'gtDP', 'h2o_hzp')
+    create_lattice('bottom_fuel', 'botfpin', 'gtDP_hzp', 'gtDP_hzp', 'gt_hzp', comment = 'Bottom of Fuel Rod')
 
 def create_axial_regions():
 
@@ -1102,7 +1107,7 @@ def create_axial_regions():
         label = axial_labels[label_idx]
         subplane = 1
         while water_planes[water_idx] < axial_surfaces[plane]:
-            axial_labels.insert(label_idx,label + 'Water Region {0}'.format(subplane))
+            axial_labels.insert(label_idx,label + ' Water Region {0}'.format(subplane))
             add_surface(plane+'_water {0}'.format(subplane), 'z-plane', '{0}'.format(water_planes[water_idx]), comment = axial_labels[label_idx])
             bottom_surface.append(plane+'_water {0}'.format(subplane))
             top_surface.append(plane+'_water {0}'.format(subplane))
@@ -1122,7 +1127,7 @@ def create_axial_regions():
     if grid:
         grid_counter += 1
         grids.append(grid_counter)
-    else
+    else:
         grids.append(0)
 
     # Loop around axial regions
@@ -1140,6 +1145,7 @@ def create_axial_regions():
             top = top,
             dp = dp,
             grid = grid,
+            water_idx = water_idx,
             cool_rho = coolant_density(water_idx))
         if water_planes[water_idx] == axial_surfaces[top]:
             water_idx += 1
@@ -1190,10 +1196,6 @@ def create_assembly():
         # Get the current axial region
         axial = axial_dict[item]
 
-        # Stop after so many regions
-        if i > 2:
-            break
-
         # Print out axial region info
         axial.display()
         print ''
@@ -1204,8 +1206,8 @@ def create_assembly():
         if current_water != axial.water_idx:
 
             # Color for plots
-            color = 255 - 255.0/(hzp_density - low_density) * \
-                    (hzp_density - axial.cool_rho)
+            color = -156.0/(hzp_density - low_density) * \
+                    (axial.cool_rho - hzp_density)
 
             # Water material
             create_water_material('water_{0}'.format(axial.water_idx),
@@ -1214,53 +1216,55 @@ def create_assembly():
             # Make this the current water index
             current_water = axial.water_idx
 
-            # Check for grid
-            if axial.grid > 0:
-                if axial.grid == 1 or axial.grid == 8:
-                    grid = 'TB'
-                else:
-                    grid = 'I'
+        # Check for grid
+        if axial.grid > 0:
+            if axial.grid == 1 or axial.grid == 8:
+                grid = 'TB'
             else:
-                grid = None
+                grid = 'I'
+        else:
+            grid = None
 
-            # Create fuel pin and guide tube for this water region
-            create_fuelpin_cell('fpw_{0}_{1}'.format(current_water, grid), 'fuel', mat_dict['water_{0}'.format(current_water)], grid=grid)
-            create_gtpin_cell('gtw_{0}_{1}'.format(current_water), 'gt', mat_dict['water_{0}'.format(current_water)], grid=grid)
+        # Check for dashpot
+        if axial.dp:
+            dp = 'DP'
+        else:
+            dp = ''
 
-            # Check to create bp pin
-            if axial_surfaces[axial.bottom] >= axial_surfaces['bpbot']:
-                create_bppin_cell('bpw_{0}_{1}'.format(current_water, grid), 'bp', mat_dict['water_{0}'.format(current_water)], grid=grid)
+        # Create fuel pin and guide tube for this water region
+        create_fuelpin_cell('fpw_{0}'.format(i), 'fuel', 'water_{0}'.format(current_water), grid=grid)
+        create_gtpin_cell('gtw_{0}'.format(i), 'gt'+dp, 'water_{0}'.format(current_water), grid=grid)
 
-        else: # What if same water region, but grid overlap
-
-            # Check for mismatch (we didnt have a grid but now we do)
-            if axial.grid > 0 .and. grid == None:
-                if axial.grid == 1 or axial.grid == 8:
-                    grid = 'TB'
-                else:
-                    grid = 'I'
-                # Create fuel pin and guide tube for this water region
-                create_fuelpin_cell('fpw_{0}_{1}'.format(current_water, grid), 'fuel', mat_dict['water_{0}'.format(current_water)], grid=grid)
-                create_gtpin_cell('gtw_{0}_{1}'.format(current_water, grid), 'gt', mat_dict['water_{0}'.format(current_water)], grid=grid)
-
-                # Check to create bp pin
-                if axial_surfaces[axial.bottom] >= axial_surfaces['bpbot']:
-                    create_bppin_cell('bpw_{0}_{1}'.format(current_water, grid), 'bp', mat_dict['water_{0}'.format(current_water)], grid=grid)
-
-            elif axial.grid == 0 .and. grid != None:
-                # Create fuel pin and guide tube for this water region
-                create_fuelpin_cell('fpw_{0}_{1}'.format(current_water, grid), 'fuel', mat_dict['water_{0}'.format(current_water)], grid=grid)
-                create_gtpin_cell('gtw_{0}_{1}'.format(current_water, grid), 'gt', mat_dict['water_{0}'.format(current_water)], grid=grid)
-
-                # Check to create bp pin
-                if axial_surfaces[axial.bottom] >= axial_surfaces['bpbot']:
-                    create_bppin_cell('bpw_{0}_{1}'.format(current_water, grid), 'bp', mat_dict['water_{0}'.format(current_water)], grid=grid)
+        # Check to create bp pin
+        if axial_surfaces[axial.bottom] >= axial_surfaces['bpbot']:
+            create_bppin_cell('bpw_{0}'.format(i), 'bp'+dp, 'water_{0}'.format(current_water), grid=grid)
+            bp_key = 'bpw_{0}'.format(i)
+        else:
+            bp_key = 'gtw_{0}'.format(i)
 
         # Create a lattice
-        create_lattice('lat1', 'fp1', 'bp1', 'gt1', 'gt1', grid='TB')
+        create_lattice('lat_{0}'.format(i), 
+            fuel_key = 'fpw_{0}'.format(i),
+            bp_key = bp_key,
+            gt_key = 'gtw_{0}'.format(i),
+            it_key = 'gtw_{0}'.format(i),
+            grid = grid,
+            comment = 'Lattice active region {0}'.format(i))
  
+        # Fill lattice into axial cell
+        add_cell(item,
+            surfaces = '{0} -{1}'.format(surf_dict[axial.bottom].id, surf_dict[axial.top].id),
+            universe = 'assembly',
+            fill = lat_dict['lat_{0}'.format(i)].id, 
+            comment = 'Cell fill lattice active region {0}'.format(i))
 
- 
+        # Add a plot
+        add_plot('plot_active_region_{0}'.format(i),
+            origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces[axial.bottom] + axial_surfaces[axial.top])),
+            width = '{0} {0}'.format(assy_pitch+5),
+            basis = 'xy',
+            filename = 'active_region_{0}'.format(i))
+
         i += 1 # next axial region
 
     # Add upper plenum region 
@@ -1279,7 +1283,7 @@ def create_core():
         comment = 'Core fill')
 
     add_plot('plot_axial',
-        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['highest_extent'] + axial_surfaces['lowest_extent'])),
+        origin = '0.0 {0} {1}'.format(6*pin_pitch,0.5*(axial_surfaces['highest_extent'] + axial_surfaces['lowest_extent'])),
         width = '{0} {1}'.format(assy_pitch+5, axial_surfaces['highest_extent'] - axial_surfaces['lowest_extent'] + 5),
         basis = 'xz',
         filename = 'axial')
@@ -1348,7 +1352,7 @@ def create_water_material(key, water_density, color=None):
     mat_h2o.add_nuclide('O-17', '71c', str(NO17 + NO18))
     mat_h2o.add_sab('lwtr', '15t')
     if color != None:
-        mat_h2o.add_color = color
+        mat_h2o.add_color('{0} {0} 255'.format(int(color)))
     mat_h2o.finalize()
 
 def write_openmc_input():
