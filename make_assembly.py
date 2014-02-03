@@ -94,6 +94,8 @@ def main():
     create_bppinDP()
     create_gtpin()
     create_gtpinDP()
+    create_fuelplenumpin()
+    create_bpplenumpin()
 
     # Create axial regions
     create_axial_regions()
@@ -461,6 +463,44 @@ def create_gtpinDP():
         universe = 'gtDP',
         material = mat_dict['zr'].id,
         comment = 'GT clad at DP')
+
+def create_fuelplenumpin():
+
+    # Fuel Pin
+    add_cell('rodplenumspring',
+        surfaces = '-{0}'.format(surf_dict['springOR'].id),
+        universe = 'fuelplenum',
+        material = mat_dict['in'].id,
+        comment = 'Inconel Spring in Fuel Pin')
+    add_cell('rodplenumgap',
+        surfaces = '{0} -{1}'.format(surf_dict['springOR'].id, surf_dict['cladIR'].id),
+        universe = 'fuelplenum',
+        material = mat_dict['he'].id,
+        comment = 'Helium Outside Spring in Fuel Pin')
+    add_cell('rodplenumclad',
+        surfaces = '{0}'.format(surf_dict['cladIR'].id),
+        universe = 'fuelplenum',
+        material = mat_dict['zr'].id,
+        comment = 'Clad Outside Spring in Fuel Pin')
+
+def create_bpplenumpin():
+
+    # BP pin
+    add_cell('bpplenumss',
+        surfaces = '-{0}'.format(surf_dict['bpIR6'].id),
+        universe = 'bpplenum',
+        material = mat_dict['ss'].id,
+        comment = 'Stainless Steel BP pin in GT')
+    add_cell('bpplenummod',
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIR'].id),
+        universe = 'bpplenum',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'Moderator between SS BP pin and GT')
+    add_cell('bpplenumclad',
+        surfaces = '{0}'.format(surf_dict['gtIR'].id),
+        universe = 'bpplenum',
+        material = mat_dict['zr'].id,
+        comment = 'Clad of GT surrounding SS BP pin')
 
 def create_fuelpin_cell(cell_key, pin_key, water_key, grid = None):
 
@@ -1257,47 +1297,9 @@ def create_assembly():
         i += 1 # next axial region
     i -= 1
     # Add pin plenum region before grid 8
-    add_cell('rodplenumspring',
-        surfaces = '-{0}'.format(surf_dict['springOR'].id),
-        universe = 'rodplenum',
-        material = mat_dict['in'].id,
-        comment = 'Inconel Spring in Fuel Pin')
-    add_cell('rodplenumgap',
-        surfaces = '{0} -{1}'.format(surf_dict['springOR'].id, surf_dict['cladIR'].id),
-        universe = 'rodplenum',
-        material = mat_dict['he'].id,
-        comment = 'Helium Outside Spring in Fuel Pin')
-    add_cell('rodplenumclad',
-        surfaces = '{0} -{1}'.format(surf_dict['cladIR'].id, surf_dict['cladOR'].id),
-        universe = 'rodplenum',
-        material = mat_dict['zr'].id,
-        comment = 'Clad Outside Spring in Fuel Pin')
-    add_cell('rodplenumcool',
-        surfaces = '{0}'.format(surf_dict['cladOR'].id),
-        universe = 'rodplenum',
-        material = mat_dict['water_{0}'.format(axial.water_idx)].id,
-        comment = 'Coolant around fuel rod plenum')
-    add_cell('bpplenumss',
-        surfaces = '-{0}'.format(surf_dict['bpIR6'].id),
-        universe = 'bpplenum',
-        material = mat_dict['ss'].id,
-        comment = 'Stainless Steel BP pin in GT')
-    add_cell('bpplenummod',
-        surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIR'].id),
-        universe = 'bpplenum',
-        material = mat_dict['h2o_hzp'].id,
-        comment = 'Moderator between SS BP pin and GT')
-    add_cell('bpplenumclad',
-        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
-        universe = 'bpplenum',
-        material = mat_dict['zr'].id,
-        comment = 'Clad of GT surrounding SS BP pin')
-    add_cell('bpplenumcool',
-        surfaces = '{0}'.format(surf_dict['gtOR'].id),
-        universe = 'bpplenum',
-        material = mat_dict['water_{0}'.format(axial.water_idx)].id,
-        comment = 'Coolant around GT surrounding SS BP pin')
-    create_lattice('pinplenum', 'rodplenum', 'bpplenum', 'gtw_{0}'.format(i), 'gtw_{0}'.format(i), comment = 'Pin Plenum before Grid 8')
+    create_fuelpin_cell('fuelpinplenum', 'fuelplenum', 'water_{0}'.format(current_water))
+    create_bppin_cell('bppinplenum', 'bpplenum', 'water_{0}'.format(current_water))
+    create_lattice('pinplenum', 'fuelpinplenum', 'bppinplenum', 'gtw_{0}'.format(i), 'gtw_{0}'.format(i), comment = 'Pin Plenum before Grid 8')
     add_surface('grid8bot', 'z-plane', '{0}'.format(axial_surfaces['grid8bot']), comment = 'Grid 8 Bottom')
     add_cell('pinplenum',
         surfaces = '{0} -{1}'.format(surf_dict['taf'].id, surf_dict['grid8bot'].id),
@@ -1309,10 +1311,28 @@ def create_assembly():
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'pin_plenum')
-    
+
+    # Add Grid 8 region
+    create_fuelpin_cell('fuelpinplenumgrid8', 'fuelplenum', 'water_{0}'.format(current_water), grid = 'TB')
+    create_bppin_cell('bppinplenumgrid8', 'bpplenum', 'water_{0}'.format(current_water), grid = 'TB')
+    create_gtpin_cell('gtpinplenumgrid8', 'gt', 'water_{0}'.format(current_water), grid = 'TB')
+    create_lattice('pinplenumgrid8', 'fuelpinplenumgrid8', 'bppinplenumgrid8', 'gtpinplenumgrid8', 'gtpinplenumgrid8', grid = 'TB', comment = 'Pin Plenum at Grid 8')
+    add_surface('grid8top', 'z-plane', '{0}'.format(axial_surfaces['grid8top']), comment = 'Grid 8 Top')
+    add_cell('pinplenumgrid8',
+        surfaces = '{0} -{1}'.format(surf_dict['grid8bot'].id, surf_dict['grid8top'].id),
+        universe = 'assembly',
+        fill = lat_dict['pinplenumgrid8'].id,
+        comment = 'Cell fill Lattice Pin Plenum at Grid 8'.format(i))
+    add_plot('plot_pin_plenumgrid',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['grid8bot'] + axial_surfaces['grid8top'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'pin_plenum_grid8')
+
+
     # Add upper plenum region 
     add_cell('upper_plenum',
-        surfaces = '{0}'.format(surf_dict['grid8bot'].id),
+        surfaces = '{0}'.format(surf_dict['grid8top'].id),
         universe = 'assembly',
         material = mat_dict['water_{0}'.format(current_water)].id,
         comment = 'Upper Plenum')
