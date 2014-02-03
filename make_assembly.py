@@ -1305,7 +1305,7 @@ def create_assembly():
         surfaces = '{0} -{1}'.format(surf_dict['taf'].id, surf_dict['grid8bot'].id),
         universe = 'assembly',
         fill = lat_dict['pinplenum'].id,
-        comment = 'Cell fill Lattice Pin Plenum before Grid 8'.format(i))
+        comment = 'Cell fill Lattice Pin Plenum before Grid 8')
     add_plot('plot_pin_plenum',
         origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['taf'] + axial_surfaces['grid8bot'])),
         width = '{0} {0}'.format(assy_pitch+5),
@@ -1322,20 +1322,118 @@ def create_assembly():
         surfaces = '{0} -{1}'.format(surf_dict['grid8bot'].id, surf_dict['grid8top'].id),
         universe = 'assembly',
         fill = lat_dict['pinplenumgrid8'].id,
-        comment = 'Cell fill Lattice Pin Plenum at Grid 8'.format(i))
+        comment = 'Cell fill Lattice Pin Plenum at Grid 8')
     add_plot('plot_pin_plenumgrid',
         origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['grid8bot'] + axial_surfaces['grid8top'])),
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'pin_plenum_grid8')
 
+    # Add pin plenum region above grid 8
+    add_surface('topplugbot', 'z-plane', '{0}'.format(axial_surfaces['topplugbot']), comment = 'Bottom of Top End Plug')
+    add_cell('pinplenum2', 
+        surfaces = '{0} -{1}'.format(surf_dict['grid8top'].id, surf_dict['topplugbot'].id),
+        universe = 'assembly',
+        fill = lat_dict['pinplenum'].id,
+        comment = 'Cell fill Lattice Pin Plenum after Grid 8')
+    add_plot('plot_pin_plenum2',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['grid8top'] + axial_surfaces['topplugbot'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'pin_plenum2')
+
+    # Make zircaloy fuel pin for top plug
+    add_cell('fueltopplugzr',
+        surfaces = '-{0}'.format(surf_dict['cladOR'].id),
+        universe = 'topplug',
+        material = mat_dict['zr'].id,
+        comment = 'Zircaloy Fuel Top Plug')
+    add_cell('fueltopplugcool',
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = 'topplug',
+        material = mat_dict['water_{0}'.format(current_water)].id,
+        comment = 'Coolant around Fuel Top Plug')
+    create_lattice('topplug', 'topplug', 'bppinplenum', 'gtw_{0}'.format(i), 'gtw_{0}'.format(i), comment = 'Fuel Top Plug')
+    add_surface('rodtop', 'z-plane', '{0}'.format(axial_surfaces['rodtop']), comment = 'Top of Fuel Rod')
+    add_cell('rodtopplug', 
+        surfaces = '{0} -{1}'.format(surf_dict['topplugbot'].id, surf_dict['rodtop'].id),
+        universe = 'assembly',
+        fill = lat_dict['topplug'].id,
+        comment = 'Cell fill Lattice Top End Plug')
+    add_plot('plot_topplug',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['topplugbot'] + axial_surfaces['rodtop'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'top_plug')
+
+    # Water region before nozzle 
+    add_cell('upperwater',
+        surfaces = '',
+        universe = 'upperwater',
+        material = mat_dict['water_{0}'.format(current_water)].id,
+        comment = 'Coolant in before nozzle')
+    create_lattice('beforenozzle', 'upperwater', 'bppinplenum', 'gtw_{0}'.format(i), 'gtw_{0}'.format(i), comment = 'Before Nozzle')
+    add_surface('nozzlebot', 'z-plane', '{0}'.format(axial_surfaces['nozzlebot']), comment = 'Bottom of Nozzle')
+    add_cell('beforenozzle', 
+        surfaces = '{0} -{1}'.format(surf_dict['rodtop'].id, surf_dict['nozzlebot'].id),
+        universe = 'assembly',
+        fill = lat_dict['beforenozzle'].id,
+        comment = 'Before nozzle')
+    add_plot('plot_beforenozzle',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['rodtop'] + axial_surfaces['nozzlebot'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'before_nozzle')
+
+    # Nozzle Region
+    # Fuel Pin
+    add_cell('fuel_nozzle_ss',
+        surfaces = '-{0}'.format(surf_dict['cladOR'].id),
+        universe = 'fuel_nozzle',
+        material = mat_dict['ss'].id,
+        comment = 'SS Fuel Pin to approximate Nozzle')
+    add_cell('fuel_nozzle_cool',
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = 'fuel_nozzle',
+        material = mat_dict['water_{0}'.format(current_water)].id,
+        comment = 'Coolant around fuel pin in nozzle')
+
+    # BP Pin
+    add_cell('bp_nozzle_ss',
+        surfaces = '-{0}'.format(surf_dict['bpIR6'].id),
+        universe = 'bp_nozzle',
+        material = mat_dict['ss'].id,
+        comment = 'SS BP Pin to approximate Nozzle')
+    add_cell('bp_nozzle_cool',
+        surfaces = '{0}'.format(surf_dict['bpIR6'].id),
+        universe = 'bp_nozzle',
+        material = mat_dict['water_{0}'.format(current_water)].id,
+        comment = 'Coolant around bp pin in nozzle')
+
+    create_lattice('nozzle', 'fuel_nozzle', 'bp_nozzle', 'upperwater', 'upperwater', comment = 'Nozzle')
+    add_surface('nozzletop', 'z-plane', '{0}'.format(axial_surfaces['nozzletop']), comment = 'Top of Nozzle')
+    add_cell('nozzle', 
+        surfaces = '{0} -{1}'.format(surf_dict['nozzlebot'].id, surf_dict['nozzletop'].id),
+        universe = 'assembly',
+        fill = lat_dict['nozzle'].id,
+        comment = 'Nozzle')
+    add_plot('plot_nozzle',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['nozzlebot'] + axial_surfaces['nozzletop'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'nozzle')
 
     # Add upper plenum region 
     add_cell('upper_plenum',
-        surfaces = '{0}'.format(surf_dict['grid8top'].id),
+        surfaces = '{0}'.format(surf_dict['nozzletop'].id),
         universe = 'assembly',
         material = mat_dict['water_{0}'.format(current_water)].id,
         comment = 'Upper Plenum')
+    add_plot('plot_upper_plenum',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['nozzletop'] + axial_surfaces['highest_extent'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'upper_plenum')
 
 def create_core():
     add_cell('core',
