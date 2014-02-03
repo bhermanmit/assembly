@@ -297,8 +297,8 @@ def create_surfaces():
     add_surface('core_right', 'x-plane', '{0}'.format(box), 'reflective', 'Core right surface')
     add_surface('core_back', 'y-plane', '{0}'.format(-box), 'reflective', 'Core back surface')
     add_surface('core_front', 'y-plane', '{0}'.format(box), 'reflective', 'Core front surface')
-    add_surface('core_bottom', 'z-plane', '{0}'.format(axial_surfaces['lowest_extent']), 'reflective', 'Core bottom surface')
-    add_surface('core_top', 'z-plane', '{0}'.format(axial_surfaces['highest_extent']), 'reflective', 'Core top surface')
+    add_surface('core_bottom', 'z-plane', '{0}'.format(axial_surfaces['lowest_extent']), 'vacuum', 'Core bottom surface')
+    add_surface('core_top', 'z-plane', '{0}'.format(axial_surfaces['highest_extent']), 'vacuum', 'Core top surface')
 
 def create_fuelpin():
 
@@ -1051,6 +1051,10 @@ def create_lower_regions():
     # Make lattice for support plate
     create_lattice('support_plate', 'supplate', 'mod', 'mod', 'gt_hzp')
 
+    # Bottom of Fuel Rod lattice
+    create_fuelpin_cell('fp_hzp', 'fuel', 'h2o_hzp')
+    create_lattice('bottom_fuel', 'fp_hzp', 'gt_hzp', 'gt_hzp', 'gt_hzp')
+
 def create_axial_regions():
 
     # Compute water region thickness
@@ -1152,8 +1156,7 @@ def create_assembly():
 
     # Add support plate 
     add_cell('support_plate',
-#        surfaces = '{0} -{1}'.format(surf_dict['lower_plenum'].id, surf_dict['support_plate']),
-        surfaces = '{0}'.format(surf_dict['lower_plenum'].id),
+        surfaces = '{0} -{1}'.format(surf_dict['lower_plenum'].id, surf_dict['support_plate'].id),
         universe = 'assembly',
         fill = lat_dict['support_plate'].id,
         comment = 'Support Plate')
@@ -1162,6 +1165,21 @@ def create_assembly():
         width = '{0} {0}'.format(assy_pitch+5),
         basis = 'xy',
         filename = 'support_plate')
+
+    # Add bottom of fuel pin 
+    add_cell('bottom_fuel',
+#        surfaces = '{0} -{1}'.format(surf_dict['support_plate'].id, surf_dict['baf']),
+        surfaces = '{0}'.format(surf_dict['support_plate'].id),
+        universe = 'assembly',
+        fill = lat_dict['bottom_fuel'].id,
+        comment = 'Bottom of fuel rods')
+    add_plot('plot_bottom_fuel',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['support_plate'] + axial_surfaces['baf'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'bottom_fuel')
+    for key in plot_dict.keys():
+        plot_dict[key].display()
 
 def create_core():
     add_cell('core',
