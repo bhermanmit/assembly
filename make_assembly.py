@@ -8,7 +8,7 @@ from collections import OrderedDict
 batches = 500
 inactive = 100
 particles = 1000
-n_water = 20
+n_water = 1
 
 # Global data
 hzp_density = 0.73986            # Highest density
@@ -1103,7 +1103,10 @@ def create_axial_regions():
             more = False
 
     # Set up function for water density calculation
-    d_rho = (hzp_density - low_density) / float(n_water - 1)
+    try:
+        d_rho = (hzp_density - low_density) / float(n_water - 1)
+    except ZeroDivisionError:
+        d_rho = 0.0
     def coolant_density(idx): return hzp_density - d_rho*float(idx + 1)
 
     # Add lower core surfaces
@@ -1130,9 +1133,13 @@ def create_axial_regions():
             break
 
         # check for grid
-        grids.append(grid)
+        if grid:
+            grids.append(grid_id)
+        else:
+            grids.append(0)
         if 'grid' in plane and 'bot' in plane:
             grid = True
+            grid_id += 1
         elif 'grid' in plane and 'top' in plane:
             grid = False
 
@@ -1157,11 +1164,7 @@ def create_axial_regions():
         label_idx += 1
     add_surface('taf', 'z-plane', '{0}'.format(axial_surfaces['taf']), comment = 'Top of Active Fuel')
     top_surface.append('taf')
-    if grid:
-        grid_counter += 1
-        grids.append(grid_counter)
-    else:
-        grids.append(0)
+    grids.append(0)
 
     # Loop around axial regions
     water_idx = 0
