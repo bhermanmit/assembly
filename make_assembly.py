@@ -95,17 +95,11 @@ def main():
     create_gtpin()
     create_gtpinDP()
 
-    # Create lower regions
-    create_lower_regions()
-
     # Create axial regions
     create_axial_regions()
 
     # Make assembly
     create_assembly()
-
-    # Make lattice
-#   create_lattice('lat1', 'fp1', 'bp1', 'gt1', 'gt1', grid='TB')
 
     # Create core
     create_core()
@@ -249,6 +243,7 @@ def create_surfaces():
     add_surface('fuelOR', 'z-cylinder', '0.0 0.0 0.392180', comment = 'Fuel Outer Radius')
     add_surface('cladIR', 'z-cylinder', '0.0 0.0 0.400050', comment = 'Clad Inner Radius')
     add_surface('cladOR', 'z-cylinder', '0.0 0.0 0.457200', comment = 'Clad Outer Radius')
+    add_surface('springOR', 'z-cylinder', '0.0 0.0 0.06459', comment = 'Spring radius')
 
     # Create Guide Tube surfaces
     add_surface('gtIR', 'z-cylinder', '0.0 0.0 0.561340', comment = 'Guide Tube Inner Radius above Dashpot')
@@ -1022,7 +1017,7 @@ def create_lattice(lat_key, fuel_key, bp_key, gt_key, it_key, grid=False, commen
                       'nw': nw_id},
         comment = comment)
 
-def create_lower_regions():
+def create_axial_regions():
 
     # Support Plate
     add_cell('suppin', 
@@ -1053,8 +1048,6 @@ def create_lower_regions():
         comment = 'Moderator around Bottom Fuel Rod')
     create_gtpin_cell('gtDP_hzp', 'gtDP', 'h2o_hzp')
     create_lattice('bottom_fuel', 'botfpin', 'gtDP_hzp', 'gtDP_hzp', 'gt_hzp', comment = 'Bottom of Fuel Rod')
-
-def create_axial_regions():
 
     # Compute water region thickness
     water_size = active_core_height/float(n_water)
@@ -1196,10 +1189,6 @@ def create_assembly():
         # Get the current axial region
         axial = axial_dict[item]
 
-        # Print out axial region info
-        axial.display()
-        print ''
-
         # Create water material for this axial region
         #     if not yet created
         grid_counter = 0
@@ -1266,10 +1255,64 @@ def create_assembly():
             filename = 'active_region_{0}'.format(i))
 
         i += 1 # next axial region
-
+    i -= 1
+    # Add pin plenum region before grid 8
+    add_cell('rodplenumspring',
+        surfaces = '-{0}'.format(surf_dict['springOR'].id),
+        universe = 'rodplenum',
+        material = mat_dict['in'].id,
+        comment = 'Inconel Spring in Fuel Pin')
+    add_cell('rodplenumgap',
+        surfaces = '{0} -{1}'.format(surf_dict['springOR'].id, surf_dict['cladIR'].id),
+        universe = 'rodplenum',
+        material = mat_dict['he'].id,
+        comment = 'Helium Outside Spring in Fuel Pin')
+    add_cell('rodplenumclad',
+        surfaces = '{0} -{1}'.format(surf_dict['cladIR'].id, surf_dict['cladOR'].id),
+        universe = 'rodplenum',
+        material = mat_dict['zr'].id,
+        comment = 'Clad Outside Spring in Fuel Pin')
+    add_cell('rodplenumcool',
+        surfaces = '{0}'.format(surf_dict['cladOR'].id),
+        universe = 'rodplenum',
+        material = mat_dict['water_{0}'.format(axial.water_idx)].id,
+        comment = 'Coolant around fuel rod plenum')
+    add_cell('bpplenumss',
+        surfaces = '-{0}'.format(surf_dict['bpIR6'].id),
+        universe = 'bpplenum',
+        material = mat_dict['ss'].id,
+        comment = 'Stainless Steel BP pin in GT')
+    add_cell('bpplenummod',
+        surfaces = '{0} -{1}'.format(surf_dict['bpIR6'].id, surf_dict['gtIR'].id),
+        universe = 'bpplenum',
+        material = mat_dict['h2o_hzp'].id,
+        comment = 'Moderator between SS BP pin and GT')
+    add_cell('bpplenumclad',
+        surfaces = '{0} -{1}'.format(surf_dict['gtIR'].id, surf_dict['gtOR'].id),
+        universe = 'bpplenum',
+        material = mat_dict['zr'].id,
+        comment = 'Clad of GT surrounding SS BP pin')
+    add_cell('bpplenumcool',
+        surfaces = '{0}'.format(surf_dict['gtOR'].id),
+        universe = 'bpplenum',
+        material = mat_dict['water_{0}'.format(axial.water_idx)].id,
+        comment = 'Coolant around GT surrounding SS BP pin')
+    create_lattice('pinplenum', 'rodplenum', 'bpplenum', 'gtw_{0}'.format(i), 'gtw_{0}'.format(i), comment = 'Pin Plenum before Grid 8')
+    add_surface('grid8bot', 'z-plane', '{0}'.format(axial_surfaces['grid8bot']), comment = 'Grid 8 Bottom')
+    add_cell('pinplenum',
+        surfaces = '{0} -{1}'.format(surf_dict['taf'].id, surf_dict['grid8bot'].id),
+        universe = 'assembly',
+        fill = lat_dict['pinplenum'].id,
+        comment = 'Cell fill Lattice Pin Plenum before Grid 8'.format(i))
+    add_plot('plot_pin_plenum',
+        origin = '0.0 0.0 {0}'.format(0.5*(axial_surfaces['taf'] + axial_surfaces['grid8bot'])),
+        width = '{0} {0}'.format(assy_pitch+5),
+        basis = 'xy',
+        filename = 'pin_plenum')
+    
     # Add upper plenum region 
     add_cell('upper_plenum',
-        surfaces = '{0}'.format(surf_dict[axial.top].id),
+        surfaces = '{0}'.format(surf_dict['grid8bot'].id),
         universe = 'assembly',
         material = mat_dict['water_{0}'.format(current_water)].id,
         comment = 'Upper Plenum')
