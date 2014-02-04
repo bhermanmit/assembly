@@ -5,9 +5,12 @@ import numpy as np
 from collections import OrderedDict
 
 # Input Data
-batches = 500
-inactive = 100
-particles = 1000000
+settings = {
+'batches' : 500,
+'inactive' : 100,
+'particles' : 1000,
+'run_cmfd' : 'true'
+}
 n_densities = 1 # number of unique densities from hzp to 0.66
 n_temps = 1  # number of unique fuel temperature linear from 600 to 1200
 n_water = 25 # number of water materials, cmfd regions
@@ -1655,6 +1658,18 @@ def write_openmc_input():
 
 ############ Settings File ##############
 
+    settings.update({
+'xbot' : -assy_pitch/2.0,
+'ybot' : -assy_pitch/2.0,
+'zbot' : axial_surfaces['baf'],
+'xtop' : assy_pitch/2.0,
+'ytop' : assy_pitch/2.0,
+'ztop' : axial_surfaces['taf'],
+'entrX' : 1,
+'entrY' : 1,
+'entrZ' : n_water
+    })
+
     set_str = """<?xml version="1.0" encoding="UTF-8"?>
 <settings>
 
@@ -1675,17 +1690,10 @@ def write_openmc_input():
     <upper_right> {xtop} {ytop} {ztop} </upper_right>
   </entropy>
 
-</settings>""".format(
-batches = batches, inactive = inactive, particles = particles,
-xbot = -assy_pitch/2.0,
-ybot = -assy_pitch/2.0,
-zbot = 0.0,
-xtop = assy_pitch/2.0,
-ytop = assy_pitch/2.0,
-ztop = 100.0,
-entrX = 17,
-entrY = 17,
-entrZ = 10)
+  <!-- Run CMFD -->
+  <run_cmfd> {run_cmfd} </run_cmfd>
+
+</settings>""".format(**settings)
     with open('settings.xml','w') as fh:
         fh.write(set_str)
 
