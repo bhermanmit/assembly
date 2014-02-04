@@ -8,8 +8,9 @@ from collections import OrderedDict
 batches = 500
 inactive = 100
 particles = 1000000
-n_densities = 1
-n_water = 25
+n_densities = 1 # number of unique densities from hzp to 0.66
+n_temps = 1  # number of unique fuel temperature linear from 600 to 1200
+n_water = 25 # number of water materials, cmfd regions
 cmfd = {
 'power' : 17.674e6,
 'flowrate' : 88.5145,
@@ -1581,7 +1582,7 @@ def create_cmfd():
     temp_low = 600.0
     temp_high = 1200.0
     try:
-        temp_slope = (temp_high - temp_low)/float(n_water - 1)
+        temp_slope = (temp_high - temp_low)/float(n_temps - 1)
     except ZeroDivisionError:
         temp_slope = 0.0
     temp_str = "0.0\n"
