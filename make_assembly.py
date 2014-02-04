@@ -1122,6 +1122,7 @@ def create_axial_regions():
         water_planes.append(current_plane)
         if current_plane + water_size > axial_surfaces['taf']:
             more = False
+    water_planes.append(axial_surfaces['taf'])
 
     # Set up function for water density calculation
     try:
@@ -1150,7 +1151,7 @@ def create_axial_regions():
             continue
 
         # stop after taf
-        if axial_surfaces[plane] >= axial_surfaces['taf']:
+        if axial_surfaces[plane] > axial_surfaces['taf']:
             break
 
         # check for grid
@@ -1177,15 +1178,15 @@ def create_axial_regions():
             water_idx += 1
             subplane += 1
             grids.append(grid)
+            if water_idx >= len(water_planes):
+                break
 
         # add surface
         add_surface(plane, 'z-plane', '{0}'.format(axial_surfaces[plane]), comment = axial_labels[label_idx])
         bottom_surface.append(plane)
         top_surface.append(plane)
         label_idx += 1
-    add_surface('taf', 'z-plane', '{0}'.format(axial_surfaces['taf']), comment = 'Top of Active Fuel')
-    top_surface.append('taf')
-    grids.append(0)
+    del bottom_surface[len(bottom_surface)-1] # delete the last entry
 
     # Loop around axial regions
     water_idx = 0
@@ -1567,7 +1568,7 @@ def create_cmfd():
         if axial.water_idx != current_id:
             current_id = axial.water_idx
             water_str += "{0}\n".format(mat_dict['water_{0}'.format(current_id)].id)
-    water_str += "0\n"
+    water_str += "0"
     cmfd.update({'water_map':water_str})
 
     # Put enrichment and bp map together
@@ -1576,8 +1577,8 @@ def create_cmfd():
     for i in range(n_water):
         enr_str += "2.4\n"
         bp_str += "12\n"
-    enr_str += "0.0\n"
-    bp_str += "0\n"
+    enr_str += "0.0"
+    bp_str += "0"
     cmfd.update({'enr_map':enr_str})
     cmfd.update({'bp_map':bp_str})
 
@@ -1588,11 +1589,11 @@ def create_cmfd():
         temp_slope = (temp_high - temp_low)/float(n_temps - 1)
     except ZeroDivisionError:
         temp_slope = 0.0
-    temp_str = "0.0\n"
+    temp_str = "{0}\n".format(temp_low)
     for i in range(n_water):
         temp = temp_slope*i + temp_low
         temp_str += "{0}\n".format(temp)
-    temp_str += "0.0\n"
+    temp_str += "{0}".format(temp_low)
     cmfd.update({'fuel_temp':temp_str})
 
     # Density
@@ -1603,7 +1604,7 @@ def create_cmfd():
         if axial.water_idx != current_id:
             current_id = axial.water_idx
             density_str += "{0}\n".format(axial.cool_rho)
-    density_str += "0.0\n"
+    density_str += "0.0"
     cmfd.update({'density':density_str})
 
     # Normalization
@@ -1751,7 +1752,7 @@ def write_openmc_input():
     <inlet_enthalpy> {inlet_enthalpy} </inlet_enthalpy>
     <n_assemblies> {n_assemblies} </n_assemblies>
     <boron> {boron} </boron>
-    <maxthinner> {thinner} </thmaxiter>
+    <maxthinner> {thinner} </maxthinner>
     <maxthouter> {thouter} </maxthouter>
     <interval> {interval} </interval>
   </thermal>
