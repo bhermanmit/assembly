@@ -8,7 +8,8 @@ from collections import OrderedDict
 batches = 500
 inactive = 100
 particles = 1000000
-n_water = 1 
+n_densities = 1
+n_water = 25
 cmfd = {
 'power' : 17.674e6,
 'flowrate' : 88.5145,
@@ -1120,7 +1121,7 @@ def create_axial_regions():
 
     # Set up function for water density calculation
     try:
-        d_rho = (hzp_density - low_density) / float(n_water - 1)
+        d_rho = (hzp_density - low_density) / float(n_densities - 1)
     except ZeroDivisionError:
         d_rho = 0.0
     def coolant_density(idx): return hzp_density - d_rho*float(idx + 1)
