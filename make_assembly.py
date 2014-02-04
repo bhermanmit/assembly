@@ -689,7 +689,7 @@ def create_bppinDP_cell(cell_key, pin_key, water_key, grid = None):
 
         # Fill in water coolant
         add_cell('cool_'+cell_key,
-            surfaces = '{0}'.format(surf_dict['gtdpOR'].id),
+            surfaces = '{0}'.format(surf_dict['gtORdp'].id),
             universe = cell_key,
             material = mat_dict[water_key].id,
             comment = 'Coolant around BP pin at DP')
@@ -1086,7 +1086,7 @@ def create_axial_regions():
         universe = 'botfpin',
         material = mat_dict['h2o_hzp'].id,
         comment = 'Moderator around Bottom Fuel Rod')
-    create_gtpin_cell('gtDP_hzp', 'gtDP', 'h2o_hzp')
+    create_gtpinDP_cell('gtDP_hzp', 'gtDP', 'h2o_hzp')
     create_lattice('bottom_fuel', 'botfpin', 'gtDP_hzp', 'gtDP_hzp', 'gt_hzp', comment = 'Bottom of Fuel Rod')
 
     # Compute water region thickness
@@ -1257,19 +1257,19 @@ def create_assembly():
         else:
             grid = None
 
-        # Check for dashpot
-        if axial.dp:
-            dp = 'DP'
-        else:
-            dp = ''
-
         # Create fuel pin and guide tube for this water region
         create_fuelpin_cell('fpw_{0}'.format(i), 'fuel', 'water_{0}'.format(current_water), grid=grid)
-        create_gtpin_cell('gtw_{0}'.format(i), 'gt'+dp, 'water_{0}'.format(current_water), grid=grid)
+        if axial.dp:
+            create_gtpinDP_cell('gtw_{0}'.format(i), 'gtDP', 'water_{0}'.format(current_water), grid=grid)
+        else:
+            create_gtpin_cell('gtw_{0}'.format(i), 'gt', 'water_{0}'.format(current_water), grid=grid)
 
         # Check to create bp pin
         if axial_surfaces[axial.bottom] >= axial_surfaces['bpbot']:
-            create_bppin_cell('bpw_{0}'.format(i), 'bp'+dp, 'water_{0}'.format(current_water), grid=grid)
+            if axial.dp:
+                create_bppinDP_cell('bpw_{0}'.format(i), 'bpDP', 'water_{0}'.format(current_water), grid=grid)
+            else:
+                create_bppin_cell('bpw_{0}'.format(i), 'bp', 'water_{0}'.format(current_water), grid=grid)
             bp_key = 'bpw_{0}'.format(i)
         else:
             bp_key = 'gtw_{0}'.format(i)
